@@ -1,0 +1,37 @@
+# Build artifacts
+**/target/
+**/*.jar
+!platform-app/target/platform-app-*.jar
+
+# IDE
+.idea/
+*.iml
+.eclipse/
+.settings/
+.project
+.classpath
+.vscode/
+*.code-workspace
+
+# Git
+.git/
+.gitignore
+
+# Docker (evitar recursión)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Env files
+.env
+.env.*

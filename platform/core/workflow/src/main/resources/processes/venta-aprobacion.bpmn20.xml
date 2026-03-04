@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             targetNamespace="http://lreyes.com/platform/sales"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL
+               http://www.omg.org/spec/BPMN/20100524/MODEL/BPMN20.xsd">
+
+  <!--
+    Proceso: Aprobación de Venta
+    ═══════════════════════════════════════════════════════════════
+
+    Flujo:
+    ┌───────┐    ┌─────────────────┐    ◆ monto>10000?    ┌──────────────────┐
+    │ Start ├───►│ Revisar Venta   ├───►  gateway   ──sí──►│ Aprob. Gerencia  ├──►[Fin]
+    └───────┘    │ (rol: gestor)   │    └────┬─────┘       │ (rol: admin)     │
+                 └─────────────────┘         │ no          └──────────────────┘
+                                             ▼
+                                          [Fin auto]
+
+    Variables de entrada:
+      - orderId     (String)  : ID del pedido
+      - cliente     (String)  : Nombre del cliente
+      - vendedor    (String)  : Usuario que creó la venta
+      - monto       (Double)  : Monto total de la venta
+      - descripcion (String)  : Descripción de la venta
+
+    Variables de salida (al completar tareas):
+      - aprobado    (Boolean) : true si se aprobó
+      - comentario  (String)  : Comentario del revisor/aprobador
+  -->
+
+  <process id="venta-aprobacion" name="Aprobación de Venta" isExecutable="true">
+
+    <!-- ═══ Start Event ═══ -->
+    <startEvent id="start" name="Inicio"/>
+
+    <sequenceFlow id="flow-start-to-review" sourceRef="start" targetRef="revisar-venta"/>
+
+    <!-- ═══ Tarea 1: Revisión por Gestor ═══ -->
+    <userTask id="revisar-venta"
+              name="Revisar Venta"
+              flowable:candidateGroups="gestor">
+      <documentation>
+        Revisar la venta del cliente ${cliente} por un monto de ${monto}.
+        Vendedor: ${vendedor}. Descripción: ${descripcion}.
+      </documentation>
+    </userTask>
+
+    <sequenceFlow id="flow-review-to-gateway" sourceRef="revisar-venta" targetRef="gw-monto"/>
+
+    <!-- ═══ Gateway: ¿Monto alto? ═══ -->
+    <exclusiveGateway id="gw-monto" name="¿Monto alto?"/>
+
+    <!-- Ruta SI: monto > 10000 → requiere aprobación gerencia -->
+    <sequenceFlow id="flow-gw-to-approval" sourceRef="gw-monto" targetRef="aprobacion-gerencia">
+      <conditionExpression xsi:type="tFormalExpression">
+        ${monto > 10000}
+      </conditionExpression>
+    </sequenceFlow>
+
+    <!-- Ruta NO: monto <= 10000 → auto-aprobado -->
+    <sequenceFlow id="flow-gw-to-end-auto" sourceRef="gw-monto" targetRef="end-auto-aprobado">
+      <conditionExpression xsi:type="tFormalExpression">
+        ${monto &lt;= 10000}
+      </conditionExpression>
+    </sequenceFlow>
+
+    <!-- ═══ Tarea 2: Aprobación Gerencia (solo montos altos) ═══ -->
+    <userTask id="aprobacion-gerencia"
+              name="Aprobación Gerencia"
+              flowable:candidateGroups="admin">
+      <documentation>
+        Venta de monto alto (${monto}) requiere aprobación de gerencia.
+        Cliente: ${cliente}. Vendedor: ${vendedor}.
+      </documentation>
+    </userTask>
+
+    <sequenceFlow id="flow-approval-to-end" sourceRef="aprobacion-gerencia" targetRef="end-aprobado"/>
+
+    <!-- ═══ End Events ═══ -->
+    <endEvent id="end-auto-aprobado" name="Auto-aprobado"/>
+    <endEvent id="end-aprobado" name="Aprobado por Gerencia"/>
+
+  </process>
+
+</definitions>

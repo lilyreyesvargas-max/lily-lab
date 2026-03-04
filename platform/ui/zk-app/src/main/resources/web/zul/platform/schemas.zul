@@ -1,0 +1,59 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.TenantSchemaListVM')"
+        hflex="1" border="none">
+
+    <vlayout spacing="10px" hflex="1">
+        <hlayout valign="middle">
+            <label value="Schemas por Tenant" style="font-size:18px; font-weight:bold;"/>
+        </hlayout>
+
+        <hlayout valign="middle" spacing="10px">
+            <button label="Nuevo Schema" onClick="@command('newSchema')"
+                    style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+        </hlayout>
+
+        <listbox model="@load(vm.schemas)" hflex="1" rows="10"
+                 emptyMessage="No hay schemas para este tenant">
+            <listhead>
+                <listheader label="ID" width="60px"/>
+                <listheader label="Schema" hflex="1"/>
+                <listheader label="Tipo" width="150px"/>
+                <listheader label="Activo" width="80px"/>
+                <listheader label="Creado" width="180px"/>
+            </listhead>
+            <template name="model" var="s">
+                <listitem>
+                    <listcell label="@load(s.id)"/>
+                    <listcell label="@load(s.schemaName)"/>
+                    <listcell label="@load(s.schemaType)"/>
+                    <listcell label="@load(s.active ? 'Si' : 'No')"/>
+                    <listcell label="@load(s.createdAt)"/>
+                </listitem>
+            </template>
+        </listbox>
+
+        <!-- Modal Nuevo Schema -->
+        <window title="Nuevo Schema" visible="@load(vm.showForm)" mode="modal"
+                width="420px" border="normal" closable="true" onClose="@command('cancelForm')">
+            <vlayout spacing="10px" style="padding:15px;">
+                <vlayout spacing="4px">
+                    <label value="Nombre del Schema"/>
+                    <textbox value="@bind(vm.formSchemaName)" hflex="1"
+                             placeholder="ej: mi_empresa_ventas"/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Tipo"/>
+                    <textbox value="@bind(vm.formSchemaType)" hflex="1"
+                             placeholder="ej: core, sales, hr"/>
+                </vlayout>
+                <hlayout>
+                    <button label="Crear" onClick="@command('saveSchema')"
+                            style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+                    <button label="Cancelar" onClick="@command('cancelForm')"
+                            style="background:#95a5a6; color:white; border:none; padding:6px 14px;"/>
+                </hlayout>
+            </vlayout>
+        </window>
+    </vlayout>
+</window>
+</zk>

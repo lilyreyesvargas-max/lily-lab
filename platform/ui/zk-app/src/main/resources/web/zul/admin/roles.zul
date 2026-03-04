@@ -1,0 +1,68 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.RoleListVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Roles" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de acciones -->
+    <hlayout valign="middle" sclass="search-bar">
+        <textbox value="@bind(vm.searchTerm)" placeholder="Buscar por nombre..."
+                 hflex="1" onOK="@command('search')"/>
+        <button label="Buscar" onClick="@command('search')"/>
+        <space hflex="1"/>
+        <button label="+ Nuevo Rol" onClick="@command('openNew')"
+                style="background:#27ae60; color:white; border:none;"/>
+    </hlayout>
+
+    <!-- Listado -->
+    <listbox model="@load(vm.roles)" selectedItem="@bind(vm.selectedRole)"
+             vflex="1" hflex="1" emptyMessage="No se encontraron roles.">
+        <listhead sizable="true">
+            <listheader label="Nombre" width="200px" sort="auto(name)"/>
+            <listheader label="Descripción" hflex="1"/>
+            <listheader label="Acciones" width="160px"/>
+        </listhead>
+        <template name="model" var="r">
+            <listitem>
+                <listcell label="@load(r.name)"/>
+                <listcell label="@load(r.description)"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Editar" onClick="@command('edit', role=r)"
+                                style="font-size:11px;"/>
+                        <button label="Borrar" onClick="@command('delete', role=r)"
+                                style="font-size:11px; color:#e74c3c;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+    <!-- Modal edición/creación -->
+    <window title="@load(vm.formTitle)" visible="@load(vm.editing)"
+            width="420px" border="normal" mode="modal" closable="true"
+            onClose="@command('cancelEdit')" sclass="modal-responsive">
+        <vlayout spacing="10px" style="padding: 15px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Nombre:" width="100px"/>
+                <textbox value="@bind(vm.editingRole.name)" hflex="1"
+                         constraint="no empty: Nombre requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Descripción:" width="100px"/>
+                <textbox value="@bind(vm.editingRole.description)" hflex="1" rows="3"
+                         multiline="true"/>
+            </hlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('cancelEdit')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+
+</vlayout>
+</window>
+</zk>

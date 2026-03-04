@@ -1,0 +1,62 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.RoleSchemaVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Permisos por Rol" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <hlayout valign="top" hflex="1" vflex="1" spacing="15px">
+
+        <!-- Lista de roles -->
+        <vlayout width="280px" vflex="1">
+            <label value="Roles del tenant" style="font-weight: bold; font-size: 14px;"/>
+            <listbox model="@load(vm.roles)" selectedItem="@bind(vm.selectedRole)"
+                     onSelect="@command('selectRole')" vflex="1" hflex="1"
+                     emptyMessage="No hay roles.">
+                <listhead>
+                    <listheader label="Nombre" width="140px"/>
+                    <listheader label="Descripcion" hflex="1"/>
+                </listhead>
+                <template name="model" var="r">
+                    <listitem>
+                        <listcell label="@load(r.name)"/>
+                        <listcell label="@load(r.description)"/>
+                    </listitem>
+                </template>
+            </listbox>
+        </vlayout>
+
+        <!-- Schemas asignables -->
+        <vlayout vflex="1" hflex="1">
+            <label value="Schemas disponibles" style="font-weight: bold; font-size: 14px;"/>
+            <label value="Seleccione un rol para ver y editar sus permisos."
+                   visible="@load(vm.selectedRole eq null)"
+                   style="color: #888; font-style: italic; margin-top: 10px;"/>
+
+            <vlayout visible="@load(vm.selectedRole ne null)" spacing="8px"
+                     style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background: #fafafa;">
+                <label value="@load('Permisos para: '.concat(vm.selectedRole.name))"
+                       style="font-weight: bold; font-size: 13px; color: #2c3e50;"/>
+                <separator/>
+                <listbox model="@load(vm.tenantSchemaTypes)"
+                         selectedItems="@bind(vm.selectedSchemaSet)"
+                         multiple="true" checkmark="true" hflex="1"
+                         nonselectableTags="*"
+                         emptyMessage="No hay schemas disponibles.">
+                    <template name="model" var="st">
+                        <listitem>
+                            <listcell label="@load(st)"/>
+                        </listitem>
+                    </template>
+                </listbox>
+                <separator/>
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+            </vlayout>
+        </vlayout>
+
+    </hlayout>
+
+</vlayout>
+</window>
+</zk>

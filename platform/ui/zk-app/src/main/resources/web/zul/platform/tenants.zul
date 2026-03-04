@@ -1,0 +1,98 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.TenantListVM')"
+        hflex="1" border="none">
+
+    <vlayout spacing="10px" hflex="1">
+        <hlayout valign="middle">
+            <label value="Tenants" style="font-size:18px; font-weight:bold;"/>
+            <space hflex="1"/>
+            <button label="Nuevo Tenant" onClick="@command('newTenant')"
+                    style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+            <button label="Actualizar" onClick="@command('refresh')"
+                    style="background:#3498db; color:white; border:none; padding:6px 14px;"/>
+        </hlayout>
+
+        <listbox model="@load(vm.tenants)" selectedItem="@bind(vm.selectedTenant)"
+                 hflex="1" rows="12" emptyMessage="No hay tenants registrados">
+            <listhead>
+                <listheader label="ID" width="60px"/>
+                <listheader label="Nombre" width="150px"/>
+                <listheader label="Nombre Display" hflex="1"/>
+                <listheader label="Color" width="80px"/>
+                <listheader label="Logo" width="80px"/>
+                <listheader label="Activo" width="80px"/>
+                <listheader label="Creado" width="180px"/>
+                <listheader label="" width="80px"/>
+            </listhead>
+            <template name="model" var="t">
+                <listitem>
+                    <listcell label="@load(t.id)"/>
+                    <listcell label="@load(t.name)"/>
+                    <listcell label="@load(t.displayName)"/>
+                    <listcell>
+                        <div width="24px" height="24px"
+                             style="@load(t.primaryColor ne null ? ('background:'.concat(t.primaryColor).concat('; border-radius:4px;')) : '')"
+                             tooltiptext="@load(t.primaryColor)"/>
+                    </listcell>
+                    <listcell label="@load(t.logoPath ne null ? 'Si' : '-')"/>
+                    <listcell label="@load(t.active ? 'Si' : 'No')"/>
+                    <listcell label="@load(t.createdAt)"/>
+                    <listcell>
+                        <button label="Editar" onClick="@command('editTenant')"
+                                style="background:#f39c12; color:white; border:none; padding:2px 10px; font-size:12px;"/>
+                    </listcell>
+                </listitem>
+            </template>
+        </listbox>
+
+        <!-- Modal Crear/Editar Tenant -->
+        <window title="@load(vm.editing ? 'Editar Tenant' : 'Nuevo Tenant')"
+                visible="@load(vm.showForm)" mode="modal" width="480px" border="normal"
+                closable="true" onClose="@command('cancelForm')">
+            <vlayout spacing="10px" style="padding:15px;">
+                <vlayout spacing="4px">
+                    <label value="Nombre (identificador)"/>
+                    <textbox value="@bind(vm.formName)" hflex="1"
+                             disabled="@load(vm.editing)"
+                             placeholder="ej: mi_empresa"/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Nombre Display"/>
+                    <textbox value="@bind(vm.formDisplayName)" hflex="1"
+                             placeholder="ej: Mi Empresa S.A."/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Color corporativo (hex)"/>
+                    <hlayout valign="middle">
+                        <textbox value="@bind(vm.formPrimaryColor)" width="120px"
+                                 placeholder="ej: #e74c3c" maxlength="7"/>
+                        <div width="30px" height="30px"
+                             style="@load((vm.formPrimaryColor ne null and vm.formPrimaryColor ne '') ? ('background:'.concat(vm.formPrimaryColor).concat('; border:1px solid #ccc; border-radius:4px;')) : 'background:#eee; border:1px solid #ccc; border-radius:4px;')"/>
+                    </hlayout>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Logotipo"/>
+                    <hlayout valign="middle">
+                        <button label="Subir logo" upload="true,maxsize=2048"
+                                onUpload="@command('uploadLogo', media=event.media)"
+                                style="background:#3498db; color:white; border:none; padding:4px 10px;"/>
+                        <label value="@load(vm.formLogoPath ne null ? vm.formLogoPath : 'Sin logo')"
+                               style="color:#888; font-size:12px;"/>
+                    </hlayout>
+                    <image src="@load(vm.logoPreviewUrl)" height="40px"
+                           visible="@load(vm.formLogoPath ne null)"/>
+                </vlayout>
+                <hlayout visible="@load(vm.editing)">
+                    <checkbox checked="@bind(vm.formActive)" label="Activo"/>
+                </hlayout>
+                <hlayout>
+                    <button label="Guardar" onClick="@command('saveTenant')"
+                            style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+                    <button label="Cancelar" onClick="@command('cancelForm')"
+                            style="background:#95a5a6; color:white; border:none; padding:6px 14px;"/>
+                </hlayout>
+            </vlayout>
+        </window>
+    </vlayout>
+</window>
+</zk>

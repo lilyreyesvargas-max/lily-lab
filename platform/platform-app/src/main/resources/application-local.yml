@@ -1,0 +1,51 @@
+##
+## Perfil LOCAL: PostgreSQL real (Docker Compose), Flyway activo, JWT local
+##
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: false  # Flyway lo maneja TenantMigrationService por schema
+
+  ## Datasource para tablas de administración global (schema 'platform')
+  datasource-platform:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}?currentSchema=platform
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+  ## Datasource secundario para Flowable (schema 'platform')
+  datasource-flowable:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}?currentSchema=platform
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+flowable:
+  database-schema-update: true
+
+## Seguridad: JWT local (igual que dev, pero contra Postgres real)
+app:
+  security:
+    mode: jwt-local
+    jwt-secret: local-secret-key-minimum-256-bits-long-for-hs256-signing-0
+  tenants:
+    - acme
+    - globex
+
+logging:
+  level:
+    com.lreyes.platform: DEBUG

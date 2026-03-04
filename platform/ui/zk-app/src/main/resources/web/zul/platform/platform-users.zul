@@ -1,0 +1,77 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.PlatformUserListVM')"
+        hflex="1" border="none">
+
+    <vlayout spacing="10px" hflex="1">
+        <hlayout valign="middle">
+            <label value="Administradores de Plataforma" style="font-size:18px; font-weight:bold;"/>
+            <space hflex="1"/>
+            <button label="Nuevo Admin" onClick="@command('newUser')"
+                    style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+            <button label="Actualizar" onClick="@command('refresh')"
+                    style="background:#3498db; color:white; border:none; padding:6px 14px;"/>
+        </hlayout>
+
+        <listbox model="@load(vm.users)" selectedItem="@bind(vm.selectedUser)"
+                 hflex="1" rows="12" emptyMessage="No hay administradores de plataforma">
+            <listhead>
+                <listheader label="Username" width="150px"/>
+                <listheader label="Email" hflex="1"/>
+                <listheader label="Nombre" hflex="1"/>
+                <listheader label="Activo" width="80px"/>
+                <listheader label="Creado" width="180px"/>
+            </listhead>
+            <template name="model" var="u">
+                <listitem>
+                    <listcell label="@load(u.username)"/>
+                    <listcell label="@load(u.email)"/>
+                    <listcell label="@load(u.fullName)"/>
+                    <listcell label="@load(u.enabled ? 'Si' : 'No')"/>
+                    <listcell label="@load(u.createdAt)"/>
+                </listitem>
+            </template>
+        </listbox>
+
+        <hlayout visible="@load(vm.selectedUser ne null)">
+            <button label="Editar" onClick="@command('editUser')"
+                    style="background:#f39c12; color:white; border:none; padding:6px 14px;"/>
+            <button label="Eliminar" onClick="@command('deleteUser')"
+                    style="background:#e74c3c; color:white; border:none; padding:6px 14px;"/>
+        </hlayout>
+
+        <!-- Modal Crear/Editar Platform Admin -->
+        <window title="@load(vm.editing ? 'Editar Admin' : 'Nuevo Admin')"
+                visible="@load(vm.showForm)" mode="modal" width="420px" border="normal"
+                closable="true" onClose="@command('cancelForm')">
+            <vlayout spacing="10px" style="padding:15px;">
+                <vlayout spacing="4px">
+                    <label value="Username"/>
+                    <textbox value="@bind(vm.formUsername)" hflex="1"
+                             disabled="@load(vm.editing)"/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="@load(vm.editing ? 'Nueva Contraseña (dejar vacío para no cambiar)' : 'Contraseña')"/>
+                    <textbox value="@bind(vm.formPassword)" hflex="1" type="password"/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Email"/>
+                    <textbox value="@bind(vm.formEmail)" hflex="1"/>
+                </vlayout>
+                <vlayout spacing="4px">
+                    <label value="Nombre Completo"/>
+                    <textbox value="@bind(vm.formFullName)" hflex="1"/>
+                </vlayout>
+                <hlayout visible="@load(vm.editing)">
+                    <checkbox checked="@bind(vm.formEnabled)" label="Activo"/>
+                </hlayout>
+                <hlayout>
+                    <button label="Guardar" onClick="@command('saveUser')"
+                            style="background:#27ae60; color:white; border:none; padding:6px 14px;"/>
+                    <button label="Cancelar" onClick="@command('cancelForm')"
+                            style="background:#95a5a6; color:white; border:none; padding:6px 14px;"/>
+                </hlayout>
+            </vlayout>
+        </window>
+    </vlayout>
+</window>
+</zk>

@@ -1,0 +1,55 @@
+##
+## Perfil DEV: PostgreSQL real, JWT simple local
+##
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: false  # Flyway se ejecuta programáticamente por TenantBootstrapRunner
+
+  ## Datasource para tablas de administración global (schema 'platform')
+  datasource-platform:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}?currentSchema=platform
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+  ## Datasource secundario para Flowable (schema 'platform')
+  datasource-flowable:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:platform}?currentSchema=platform
+    username: ${DB_USER:platform}
+    password: ${DB_PASSWORD:platform}
+    driver-class-name: org.postgresql.Driver
+
+## Flowable: crea tablas automáticamente
+flowable:
+  database-schema-update: true
+  async-executor-activate: false  # Evita jobs en background en dev
+
+## Seguridad: JWT local firmado con clave estática (solo dev)
+app:
+  security:
+    mode: jwt-local
+    jwt-secret: dev-secret-key-minimum-256-bits-long-for-hs256-signing-00
+  tenants:
+    - acme
+    - globex
+
+logging:
+  level:
+    com.lreyes.platform: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.zkoss: DEBUG

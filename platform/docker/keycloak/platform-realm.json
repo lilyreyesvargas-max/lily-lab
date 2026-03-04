@@ -1,0 +1,103 @@
+{
+  "realm": "platform",
+  "enabled": true,
+  "displayName": "Platform",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Administrador del sistema" },
+      { "name": "gestor", "description": "Gestor de operaciones" },
+      { "name": "operador", "description": "Operador básico" },
+      { "name": "auditor", "description": "Auditor (solo lectura)" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "platform-app",
+      "name": "Platform Application",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8080/*"],
+      "webOrigins": ["http://localhost:8080"],
+      "defaultClientScopes": ["openid", "profile", "email"],
+      "protocolMappers": [
+        {
+          "name": "tenant-id-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "tenant_id",
+            "claim.name": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@platform.local",
+      "firstName": "Admin",
+      "lastName": "Platform",
+      "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+      "realmRoles": ["admin", "gestor", "operador"],
+      "attributes": { "tenant_id": ["acme"] }
+    },
+    {
+      "username": "gestor",
+      "enabled": true,
+      "email": "gestor@platform.local",
+      "firstName": "Gestor",
+      "lastName": "Ventas",
+      "credentials": [{ "type": "password", "value": "gestor", "temporary": false }],
+      "realmRoles": ["gestor", "operador"],
+      "attributes": { "tenant_id": ["acme"] }
+    },
+    {
+      "username": "operador",
+      "enabled": true,
+      "email": "operador@platform.local",
+      "firstName": "Operador",
+      "lastName": "Base",
+      "credentials": [{ "type": "password", "value": "operador", "temporary": false }],
+      "realmRoles": ["operador"],
+      "attributes": { "tenant_id": ["globex"] }
+    },
+    {
+      "username": "auditor",
+      "enabled": true,
+      "email": "auditor@platform.local",
+      "firstName": "Auditor",
+      "lastName": "Sistema",
+      "credentials": [{ "type": "password", "value": "auditor", "temporary": false }],
+      "realmRoles": ["auditor"],
+      "attributes": { "tenant_id": ["acme"] }
+    }
+  ]
+}

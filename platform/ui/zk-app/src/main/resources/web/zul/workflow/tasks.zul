@@ -1,0 +1,89 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.WorkflowTasksVM')"
+        vflex="1" hflex="1" contentStyle="overflow-y:auto">
+<vlayout hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Procesos / Tareas" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de acciones -->
+    <hlayout valign="middle">
+        <button label="Actualizar" onClick="@command('refreshTasks')"/>
+        <button label="+ Iniciar Aprobación de Venta" onClick="@command('toggleStartForm')"
+                style="background:#8e44ad; color:white; border:none;"/>
+        <space hflex="1"/>
+        <label value="@load(vm.statusMessage)" style="color: #7f8c8d; font-size: 12px;"/>
+    </hlayout>
+
+    <!-- Formulario para iniciar proceso (toggle) -->
+    <groupbox visible="@load(vm.showStartForm)" mold="3d" closable="false">
+        <caption label="Iniciar Proceso: Aprobación de Venta"/>
+        <vlayout spacing="8px" style="padding: 10px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="ID Pedido:" width="100px"/>
+                <textbox value="@bind(vm.orderId)" hflex="1" placeholder="ORD-001"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Cliente:" width="100px"/>
+                <textbox value="@bind(vm.cliente)" hflex="1" placeholder="Nombre del cliente"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Vendedor:" width="100px"/>
+                <textbox value="@bind(vm.vendedor)" hflex="1" placeholder="Usuario vendedor"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Monto:" width="100px"/>
+                <doublebox value="@bind(vm.monto)" hflex="1" format="#,##0.00"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Descripción:" width="100px"/>
+                <textbox value="@bind(vm.descripcion)" hflex="1" rows="2"/>
+            </hlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Iniciar Proceso" onClick="@command('startApproval')"
+                        style="background:#8e44ad; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('toggleStartForm')"/>
+            </hlayout>
+            <label value="Nota: si monto > 10,000, requiere aprobación de gerencia."
+                   style="color:#95a5a6; font-size:11px;"/>
+        </vlayout>
+    </groupbox>
+
+    <!-- Lista de tareas pendientes -->
+    <listbox model="@load(vm.pendingTasks)" hflex="1" height="400px"
+             emptyMessage="No hay tareas pendientes en este tenant.">
+        <listhead sizable="true">
+            <listheader label="Tarea" width="150px"/>
+            <listheader label="Pedido" width="90px"/>
+            <listheader label="Cliente" width="120px"/>
+            <listheader label="Monto" width="100px"/>
+            <listheader label="Descripción" width="180px"/>
+            <listheader label="Asignado a" width="100px"/>
+            <listheader label="Creada" width="140px"/>
+            <listheader label="Acciones" width="180px"/>
+        </listhead>
+        <template name="model" var="t">
+            <listitem>
+                <listcell label="@load(t.name())"/>
+                <listcell label="@load(t.processVariables().get('orderId'))"/>
+                <listcell label="@load(t.processVariables().get('cliente'))"/>
+                <listcell label="@load(t.processVariables().get('monto'))"/>
+                <listcell label="@load(t.processVariables().get('descripcion'))"/>
+                <listcell label="@load(t.assignee())"/>
+                <listcell label="@load(t.createTime())"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Reclamar" onClick="@command('claimTask', taskId=t.id())"
+                                visible="@load(empty t.assignee())"
+                                style="font-size:11px; background:#f39c12; color:white; border:none;"/>
+                        <button label="Completar" onClick="@command('completeTask', taskId=t.id())"
+                                style="font-size:11px; background:#27ae60; color:white; border:none;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+</vlayout>
+</window>
+</zk>

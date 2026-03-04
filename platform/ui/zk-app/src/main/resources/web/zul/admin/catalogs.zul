@@ -1,0 +1,100 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.CatalogListVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Catálogos" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de filtros y acciones -->
+    <hlayout valign="middle" sclass="search-bar">
+        <label value="Tipo:"/>
+        <combobox model="@load(vm.catalogTypes)" selectedItem="@bind(vm.selectedType)"
+                  onChange="@command('filterByType')" placeholder="Todos los tipos"
+                  width="200px" autocomplete="true">
+            <template name="model" var="t">
+                <comboitem label="@load(t)"/>
+            </template>
+        </combobox>
+        <textbox value="@bind(vm.searchTerm)" placeholder="Buscar por nombre o código..."
+                 hflex="1" onOK="@command('search')"/>
+        <button label="Buscar" onClick="@command('search')"/>
+        <space hflex="1"/>
+        <button label="+ Nuevo Catálogo" onClick="@command('openNew')"
+                style="background:#27ae60; color:white; border:none;"/>
+    </hlayout>
+
+    <!-- Listado -->
+    <listbox model="@load(vm.catalogs)" selectedItem="@bind(vm.selectedCatalog)"
+             vflex="1" hflex="1" emptyMessage="No se encontraron catálogos.">
+        <listhead sizable="true">
+            <listheader label="Tipo" width="140px" sort="auto(type)"/>
+            <listheader label="Código" width="120px" sort="auto(code)"/>
+            <listheader label="Nombre" width="200px" sort="auto(name)"/>
+            <listheader label="Activo" width="70px"/>
+            <listheader label="Orden" width="70px" sort="auto(sortOrder)"/>
+            <listheader label="Acciones" width="160px"/>
+        </listhead>
+        <template name="model" var="c">
+            <listitem>
+                <listcell label="@load(c.type)"/>
+                <listcell label="@load(c.code)"/>
+                <listcell label="@load(c.name)"/>
+                <listcell label="@load(c.active ? 'Sí' : 'No')"/>
+                <listcell label="@load(c.sortOrder)"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Editar" onClick="@command('edit', catalog=c)"
+                                style="font-size:11px;"/>
+                        <button label="Borrar" onClick="@command('delete', catalog=c)"
+                                style="font-size:11px; color:#e74c3c;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+    <!-- Modal edición/creación -->
+    <window title="@load(vm.formTitle)" visible="@load(vm.editing)"
+            width="480px" border="normal" mode="modal" closable="true"
+            onClose="@command('cancelEdit')" sclass="modal-responsive">
+        <vlayout spacing="10px" style="padding: 15px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Tipo:" width="100px"/>
+                <textbox value="@bind(vm.editingCatalog.type)" hflex="1"
+                         constraint="no empty: Tipo requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Código:" width="100px"/>
+                <textbox value="@bind(vm.editingCatalog.code)" hflex="1"
+                         constraint="no empty: Código requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Nombre:" width="100px"/>
+                <textbox value="@bind(vm.editingCatalog.name)" hflex="1"
+                         constraint="no empty: Nombre requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Descripción:" width="100px"/>
+                <textbox value="@bind(vm.editingCatalog.description)" hflex="1"
+                         rows="3" multiline="true"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Activo:" width="100px"/>
+                <checkbox checked="@bind(vm.editingCatalog.active)"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Orden:" width="100px"/>
+                <intbox value="@bind(vm.editingCatalog.sortOrder)" width="80px"/>
+            </hlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('cancelEdit')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+
+</vlayout>
+</window>
+</zk>

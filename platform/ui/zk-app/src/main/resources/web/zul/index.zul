@@ -1,0 +1,251 @@
+<?page title="Platform"?>
+<?meta name="viewport" content="width=device-width, initial-scale=1"?>
+<?link rel="stylesheet" href="~./css/responsive.css"?>
+<?script type="text/javascript" content="
+var _ri=setInterval(function(){
+    var el=document.querySelector('.z-west');
+    if(!el)return;
+    var w=zk.Widget.$(el);
+    if(!w||!w.parent)return;
+    clearInterval(_ri);
+    var bl=w.parent;
+    function apply(mob){
+        w.setVisible(!mob);
+        setTimeout(function(){bl.resize();},100);
+    }
+    var wasMob=(768>=window.innerWidth);
+    if(wasMob)apply(true);
+    window.addEventListener('resize',function(){
+        var mob=(768>=window.innerWidth);
+        if(mob!==wasMob){wasMob=mob;apply(mob);}
+    });
+},300);
+"?>
+<zk>
+<style>
+    .header-bar { padding: 0 15px; }
+    .header-bar .z-north-body { overflow: visible !important; }
+    .sidebar-nav .z-listbox { border: none; }
+    .sidebar-nav .z-listbox-header { display: none; }
+    .content-area { padding: 15px; background: #f5f6fa; }
+    .btn-logout { background: #e74c3c; color: white; border: none; padding: 4px 12px; }
+    .header-logo { display: flex; align-items: center; margin-right: 12px; }
+    .header-logo img { height: 52px; max-width: 260px; object-fit: contain; }
+
+    /* Hamburger: fuera del hlayout, posicionado absoluto */
+    .hamburger-btn {
+        display: none;
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 100;
+        background: transparent !important;
+        border: none !important;
+        font-size: 22px !important;
+        cursor: pointer;
+        padding: 2px 8px !important;
+    }
+    /* Forzar que el contenido del botón herede el color del inline style */
+    .hamburger-btn .z-button-content {
+        color: inherit !important;
+    }
+
+    /* Botón toggle asistente en header */
+    .btn-assistant {
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        border-radius: 20px !important;
+        padding: 3px 12px !important;
+        font-size: 13px !important;
+        cursor: pointer;
+        margin-left: 6px;
+    }
+    .btn-assistant .z-button-content { color: inherit !important; }
+
+    /* Burbuja flotante del asistente */
+    .assistant-float-container {
+        position: fixed !important;
+        bottom: 20px;
+        right: 20px;
+        width: 360px;
+        height: 500px;
+        z-index: 1900;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+        overflow: hidden;
+        display: none;
+    }
+    .assistant-float-container.assistant-open {
+        display: block;
+    }
+    .assistant-float-container .z-window-content {
+        padding: 0 !important;
+    }
+
+    /* FAB (botón flotante redondo) para mobile */
+    .assistant-fab {
+        position: fixed !important;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50% !important;
+        background: #3498db !important;
+        color: white !important;
+        border: none !important;
+        font-size: 24px !important;
+        z-index: 1899;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        cursor: pointer;
+        display: none;
+    }
+    .assistant-fab .z-button-content { color: white !important; }
+
+    @media screen and (max-width: 768px) {
+        .assistant-float-container {
+            width: calc(100vw - 20px);
+            height: calc(100vh - 100px);
+            bottom: 10px;
+            right: 10px;
+        }
+        .assistant-fab { display: block !important; }
+    }
+
+    /* Mobile: header compacto */
+    @media screen and (max-width: 768px) {
+        .header-content.z-hlayout {
+            overflow: visible !important;
+        }
+        .header-hide-mobile { display: none !important; }
+        .header-logo img { height: 32px !important; max-width: 120px !important; }
+        .hamburger-btn { display: block !important; }
+    }
+</style>
+
+<borderlayout viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.LayoutVM')"
+              hflex="1" vflex="1">
+
+    <!-- HEADER -->
+    <north height="64px" border="none" sclass="header-bar"
+           style="@load('background:'.concat(vm.headerColor).concat(';'))">
+        <div hflex="1" vflex="1" style="overflow:visible; position:relative;">
+            <hlayout vflex="1" hflex="1" valign="middle" style="padding: 0 15px; overflow: visible;"
+                     sclass="header-content">
+                <div sclass="header-logo" visible="@load(vm.logoUrl ne null)">
+                    <html content="@load(vm.logoUrl ne null ? ('&lt;img src=&quot;'.concat(vm.logoUrl).concat('&quot; style=&quot;height:52px; max-width:260px; object-fit:contain;&quot;/>')) : '')"/>
+                </div>
+                <label value="Platform"
+                       style="@load('color:'.concat(vm.headerTextColor).concat('; font-size:18px; font-weight:bold;'))"
+                       visible="@load(vm.logoUrl eq null)"/>
+                <space hflex="1"/>
+
+                <!-- Selector de tenant: solo visible para platform admin -->
+                <label value="Tenant:" sclass="header-hide-mobile"
+                       style="@load('color:'.concat(vm.headerTextColor).concat('; font-size:13px;'))"
+                       visible="@load(vm.showTenantSwitcher)"/>
+                <combobox model="@load(vm.tenants)" selectedItem="@bind(vm.selectedTenant)"
+                          onSelect="@command('changeTenant')" width="180px" readonly="true"
+                          sclass="header-hide-mobile"
+                          visible="@load(vm.showTenantSwitcher)">
+                    <template name="model" var="t">
+                        <comboitem label="@load(t.displayName)"/>
+                    </template>
+                </combobox>
+
+                <!-- Label estático de tenant: para usuarios normales -->
+                <label value="@load(vm.tenantLabel)" sclass="header-hide-mobile"
+                       style="@load('color:'.concat(vm.headerTextColor).concat('; font-size:13px; font-weight:bold;'))"
+                       visible="@load(not vm.showTenantSwitcher)"/>
+
+                <separator orient="vertical" bar="true" sclass="header-hide-mobile"
+                           style="@load('border-color:'.concat(vm.headerTextColor eq '#222222' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)').concat(';'))"/>
+
+                <label value="@load(vm.displayUser)" sclass="header-hide-mobile"
+                       style="@load('color:'.concat(vm.headerTextColor).concat('; font-size:13px;'))"/>
+
+                <button label="&#128172; Asistente" sclass="btn-assistant header-hide-mobile"
+                        style="@load('color:'.concat(vm.headerTextColor).concat(';'))"
+                        xmlns:w="client"
+                        w:onClick="
+                            var c=jq('.assistant-float-container')[0];
+                            if(c){c.classList.toggle('assistant-open');}
+                        "/>
+
+                <button label="Salir" onClick="@command('logout')" sclass="btn-logout header-hide-mobile"/>
+            </hlayout>
+
+            <!-- Hamburger: fuera del hlayout, posición absoluta para no depender del flex -->
+            <button label="&#9776;" sclass="hamburger-btn"
+                    style="@load('color:'.concat(vm.headerTextColor).concat(';'))"
+                    popup="mobileMenu, after_end"/>
+
+            <!-- Menu popup movil — fondo blanco, texto negro -->
+            <popup id="mobileMenu" sclass="mobile-menu" width="220px">
+                <vlayout spacing="0">
+                    <hlayout valign="middle" style="padding:8px 12px; border-bottom:1px solid #e0e0e0;"
+                             visible="@load(vm.showTenantSwitcher)">
+                        <label value="Tenant:" style="color:#222222; font-size:12px; font-weight:bold;"/>
+                        <combobox model="@load(vm.tenants)" selectedItem="@bind(vm.selectedTenant)"
+                                  onSelect="@command('changeTenant')" width="150px" readonly="true">
+                            <template name="model" var="t">
+                                <comboitem label="@load(t.displayName)"/>
+                            </template>
+                        </combobox>
+                    </hlayout>
+                    <div style="padding:8px 12px; border-bottom:1px solid #e0e0e0;">
+                        <label value="@load(vm.displayUser)" style="color:#222222; font-size:13px;"/>
+                    </div>
+                    <listbox model="@load(vm.menuItems)" selectedItem="@bind(vm.selectedMenu)"
+                             onSelect="@command('navigate')" hflex="1" sclass="mobile-menu-list"
+                             xmlns:w="client"
+                             w:onSelect="var p=this.$f('mobileMenu');if(p)p.close();">
+                        <template name="model" var="item">
+                            <listitem>
+                                <listcell label="@load(item.label)"/>
+                            </listitem>
+                        </template>
+                    </listbox>
+                    <button label="Cerrar sesión" onClick="@command('logout')" hflex="1"
+                            style="background:#e74c3c; color:white; border:none; padding:8px; margin:4px; border-radius:4px;"/>
+                </vlayout>
+            </popup>
+        </div>
+    </north>
+
+    <!-- SIDEBAR -->
+    <west id="westPanel" width="200px" border="none" sclass="sidebar-nav"
+          style="@load('background:'.concat(vm.sidebarColor).concat(';'))">
+        <listbox model="@load(vm.menuItems)" selectedItem="@bind(vm.selectedMenu)"
+                 onSelect="@command('navigate')" vflex="1" hflex="1"
+                 style="@load('background:'.concat(vm.sidebarColor).concat(';'))">
+            <template name="model" var="item">
+                <listitem style="@load('color:'.concat(vm.sidebarTextColor).concat(';'))">
+                    <listcell label="@load(item.label)"/>
+                </listitem>
+            </template>
+        </listbox>
+    </west>
+
+    <!-- CONTENT -->
+    <center border="none" sclass="content-area" autoscroll="true">
+        <include src="@load(vm.currentPage)" hflex="1"/>
+    </center>
+
+
+</borderlayout>
+
+<!-- FAB flotante para mobile -->
+<button label="&#128172;" sclass="assistant-fab"
+        xmlns:w="client"
+        w:onClick="
+            var c=jq('.assistant-float-container')[0];
+            if(c){c.classList.toggle('assistant-open');}
+        "/>
+
+<!-- Burbuja flotante del asistente -->
+<div sclass="assistant-float-container">
+    <include src="~./zul/assistant-panel.zul"/>
+</div>
+
+</zk>

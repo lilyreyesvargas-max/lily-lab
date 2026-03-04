@@ -1,0 +1,85 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.EmployeeListVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Empleados" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de acciones -->
+    <hlayout valign="middle" sclass="search-bar">
+        <textbox value="@bind(vm.searchTerm)" placeholder="Buscar por nombre, email o cargo..."
+                 hflex="1" onOK="@command('search')"/>
+        <button label="Buscar" onClick="@command('search')"/>
+        <space hflex="1"/>
+        <button label="+ Nuevo Empleado" onClick="@command('openNew')"
+                style="background:#27ae60; color:white; border:none;"/>
+    </hlayout>
+
+    <!-- Listado -->
+    <listbox model="@load(vm.employees)" selectedItem="@bind(vm.selectedEmployee)"
+             vflex="1" hflex="1" emptyMessage="No se encontraron empleados.">
+        <listhead sizable="true">
+            <listheader label="Nombre" width="160px" sort="auto(firstName)"/>
+            <listheader label="Apellido" width="160px" sort="auto(lastName)"/>
+            <listheader label="Email" width="220px" sort="auto(email)"/>
+            <listheader label="Cargo" width="160px" sort="auto(position)"/>
+            <listheader label="Acciones" width="160px"/>
+        </listhead>
+        <template name="model" var="e">
+            <listitem>
+                <listcell label="@load(e.firstName)"/>
+                <listcell label="@load(e.lastName)"/>
+                <listcell label="@load(e.email)"/>
+                <listcell label="@load(e.position)"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Editar" onClick="@command('edit', employee=e)"
+                                style="font-size:11px;"/>
+                        <button label="Borrar" onClick="@command('delete', employee=e)"
+                                style="font-size:11px; color:#e74c3c;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+    <!-- Modal edición/creación -->
+    <window title="@load(vm.formTitle)" visible="@load(vm.editing)"
+            width="420px" border="normal" mode="modal" closable="true"
+            onClose="@command('cancelEdit')" sclass="modal-responsive">
+        <vlayout spacing="10px" style="padding: 15px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Nombre:" width="80px"/>
+                <textbox value="@bind(vm.editingEmployee.firstName)" hflex="1"
+                         constraint="no empty: Nombre requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Apellido:" width="80px"/>
+                <textbox value="@bind(vm.editingEmployee.lastName)" hflex="1"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Email:" width="80px"/>
+                <textbox value="@bind(vm.editingEmployee.email)" hflex="1"
+                         constraint="/.+@.+\..+/: Email inválido, no empty: Email requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Cargo:" width="80px"/>
+                <textbox value="@bind(vm.editingEmployee.position)" hflex="1"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row" visible="@load(vm.newRecord)">
+                <label value="Contraseña:" width="80px"/>
+                <textbox value="@bind(vm.initialPassword)" hflex="1" type="password"
+                         placeholder="Contraseña para acceso al sistema"/>
+            </hlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('cancelEdit')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+
+</vlayout>
+</window>
+</zk>

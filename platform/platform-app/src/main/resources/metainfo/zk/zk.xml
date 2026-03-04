@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Configuración ZK adicional en el módulo principal (platform-app).
+    Garantiza que timer-keep-alive se aplique incluso si el zk.xml
+    de ui-zk-app no se carga desde el JAR anidado.
+    ZK fusiona todos los zk.xml encontrados en metainfo/zk/.
+
+    NOTA: NO usar session-timeout ni desktop-timeout aquí.
+    ZK 10 CE interpreta el valor como segundos en lugar de minutos.
+    El timeout de sesión HTTP se controla en application.yml:
+    server.servlet.session.timeout=30m
+-->
+<zk>
+    <config-name>platform-app</config-name>
+
+    <session-config>
+        <timer-keep-alive>true</timer-keep-alive>
+    </session-config>
+
+    <library-property>
+        <name>org.zkoss.zk.ui.timer.keep.alive</name>
+        <value>true</value>
+    </library-property>
+</zk>

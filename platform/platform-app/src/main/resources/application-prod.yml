@@ -1,0 +1,57 @@
+##
+## Perfil PROD: PostgreSQL real, OIDC (Keycloak), Flyway activo
+##
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: false  # Flyway lo maneja TenantMigrationService por schema
+
+  ## Datasource para tablas de administración global (schema 'platform')
+  datasource-platform:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}?currentSchema=platform
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  ## Datasource secundario para Flowable
+  datasource-flowable:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}?currentSchema=platform
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  ## OIDC (Keycloak)
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI}
+          jwk-set-uri: ${OIDC_JWK_SET_URI}
+
+flowable:
+  database-schema-update: false
+
+app:
+  security:
+    mode: oidc
+  tenants: ${APP_TENANTS:acme,globex}
+
+logging:
+  level:
+    com.lreyes.platform: INFO
+
+server:
+  port: ${SERVER_PORT:8080}

@@ -1,0 +1,40 @@
+<zk>
+<vlayout viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.DashboardVM')"
+         spacing="15px" style="padding: 10px;">
+    <label value="Dashboard" style="font-size: 22px; font-weight: bold; color: #2c3e50;"/>
+    <separator/>
+
+    <hlayout spacing="15px" sclass="dashboard-cards" hflex="1">
+        <groupbox mold="3d" hflex="1" visible="@load(vm.showCustomers)">
+            <caption label="Clientes"/>
+            <vlayout style="padding: 10px; text-align: center;">
+                <label value="@load(vm.customerCount)" style="font-size: 36px; font-weight: bold; color: #3498db;"/>
+                <label value="registrados" style="color: #7f8c8d;"/>
+            </vlayout>
+        </groupbox>
+
+        <groupbox mold="3d" hflex="1" visible="@load(vm.showEmployees)">
+            <caption label="Empleados"/>
+            <vlayout style="padding: 10px; text-align: center;">
+                <label value="@load(vm.employeeCount)" style="font-size: 36px; font-weight: bold; color: #27ae60;"/>
+                <label value="activos" style="color: #7f8c8d;"/>
+            </vlayout>
+        </groupbox>
+
+        <groupbox mold="3d" hflex="1" visible="@load(vm.showTasks)">
+            <caption label="Tareas Pendientes"/>
+            <vlayout style="padding: 10px; text-align: center;">
+                <label value="@load(vm.pendingTaskCount)" style="font-size: 36px; font-weight: bold; color: #e67e22;"/>
+                <label value="por revisar" style="color: #7f8c8d;"/>
+            </vlayout>
+        </groupbox>
+    </hlayout>
+
+    <separator/>
+    <label value="Bienvenido a la plataforma. Usa el menú lateral para navegar."
+           style="color: #7f8c8d; font-size: 13px;"/>
+    <label visible="@load(vm.tenantName ne null)"
+           value="@load(('Tenant activo: ').concat(vm.tenantName))"
+           style="color: #95a5a6; font-size: 11px;"/>
+</vlayout>
+</zk>

@@ -1,0 +1,136 @@
+<zk>
+<style>
+    .assistant-panel {
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    @media screen and (max-width: 768px) {
+        .assistant-panel { height: calc(100vh - 100px); }
+    }
+    .assistant-header {
+        padding: 10px 12px;
+        background: #2c3e50;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    .assistant-header-title {
+        font-size: 15px;
+        font-weight: bold;
+        color: #ffffff;
+    }
+    .assistant-messages {
+        overflow-y: auto;
+        padding: 10px;
+        background: #f8f9fa;
+        flex: 1;
+    }
+    .assistant-msg-row {
+        margin-bottom: 8px;
+        display: flex;
+    }
+    .assistant-msg-row-user {
+        justify-content: flex-end;
+    }
+    .assistant-msg-row-bot {
+        justify-content: flex-start;
+    }
+    .assistant-bubble {
+        max-width: 85%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    .assistant-bubble-user {
+        background: #3498db;
+        color: #ffffff;
+        border-bottom-right-radius: 4px;
+    }
+    .assistant-bubble-bot {
+        background: #ffffff;
+        color: #2c3e50;
+        border: 1px solid #dee2e6;
+        border-bottom-left-radius: 4px;
+    }
+    .assistant-input-area {
+        padding: 8px;
+        background: #ffffff;
+        border-top: 1px solid #dee2e6;
+        flex-shrink: 0;
+    }
+    .assistant-input-area .z-textbox {
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+    .assistant-btn-send {
+        border-radius: 20px !important;
+        background: #3498db !important;
+        color: white !important;
+        border: none !important;
+        padding: 6px 14px !important;
+        font-size: 13px !important;
+    }
+    .assistant-btn-header {
+        background: transparent !important;
+        border: none !important;
+        color: #ffffff !important;
+        font-size: 12px !important;
+        padding: 2px 8px !important;
+        cursor: pointer;
+    }
+    .assistant-btn-header .z-button-content { color: #ffffff !important; }
+    .assistant-btn-close .z-button-content { color: #ffffff !important; font-size: 18px !important; }
+</style>
+
+<div sclass="assistant-panel"
+     viewModel="@id('avm') @init('com.lreyes.platform.ui.zk.vm.AssistantVM')">
+
+    <!-- Header -->
+    <div sclass="assistant-header">
+        <label value="Asistente" sclass="assistant-header-title"/>
+        <hlayout valign="middle" spacing="4px">
+            <button label="Limpiar" sclass="assistant-btn-header"
+                    onClick="@command('clearChat')"/>
+            <button label="&#10005;" sclass="assistant-btn-header assistant-btn-close"
+                    xmlns:w="client"
+                    w:onClick="
+                        var c=jq('.assistant-float-container')[0];
+                        if(c){c.classList.remove('assistant-open');}
+                    "/>
+        </hlayout>
+    </div>
+
+    <!-- Área de mensajes -->
+    <div sclass="assistant-messages"
+         children="@load(avm.messages)">
+        <template name="children" var="msg">
+            <div sclass="@load(msg.fromUser ? 'assistant-msg-row assistant-msg-row-user' : 'assistant-msg-row assistant-msg-row-bot')">
+                <label value="@load(msg.text)" multiline="true"
+                       sclass="@load(msg.fromUser ? 'assistant-bubble assistant-bubble-user' : 'assistant-bubble assistant-bubble-bot')"/>
+            </div>
+        </template>
+    </div>
+
+    <!-- Input -->
+    <div sclass="assistant-input-area">
+        <hlayout hflex="1" valign="middle" spacing="6px">
+            <textbox value="@bind(avm.userInput)" hflex="1"
+                     placeholder="Escribe un mensaje..."
+                     onOK="@command('sendMessage')"/>
+            <button label="Enviar" sclass="assistant-btn-send"
+                    onClick="@command('sendMessage')"/>
+        </hlayout>
+    </div>
+
+</div>
+</zk>

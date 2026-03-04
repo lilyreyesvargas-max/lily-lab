@@ -1,0 +1,214 @@
+/* ============================================
+   responsive.css — ZK MVVM Responsive
+   NO sobreescribir borderlayout (north/west/center)
+   — ZK los maneja con JS, CSS los rompe.
+   ============================================ */
+
+/* ========================
+   BASE — Desktop
+   ======================== */
+
+/* Dashboard cards: permitir wrap */
+.dashboard-cards {
+    flex-wrap: wrap !important;
+}
+
+/* Modales: nunca exceder viewport */
+.modal-responsive {
+    max-width: 95vw;
+    box-sizing: border-box;
+}
+
+/* Listbox: scroll horizontal si no cabe */
+.z-listbox {
+    overflow-x: auto;
+}
+
+/* Menú popup móvil — fondo blanco, texto negro */
+.mobile-menu {
+    background: #ffffff !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px;
+    padding: 0 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.mobile-menu .z-popup-content {
+    background: #ffffff !important;
+}
+
+.mobile-menu .z-listbox {
+    background: #ffffff !important;
+    border: none !important;
+    min-height: 0 !important;
+}
+
+.mobile-menu .z-listitem {
+    color: #222222;
+}
+
+.mobile-menu .z-listitem:hover {
+    background: #f0f0f0;
+}
+
+.mobile-menu .z-listitem.z-listitem-selected {
+    background: #e0e0e0;
+    color: #222222;
+}
+
+.mobile-menu .z-listbox-header {
+    display: none;
+}
+
+.mobile-menu .z-label {
+    color: #222222 !important;
+}
+
+.mobile-menu .z-combobox {
+    color: #222222;
+}
+
+/* Hamburger: estilos definidos en index.zul (posición absoluta fuera del hlayout) */
+
+/* ========================
+   Tablet (≤ 1024px)
+   ======================== */
+@media screen and (max-width: 1024px) {
+
+    /* Modales no excedan 90vw */
+    .modal-responsive {
+        max-width: 90vw;
+    }
+}
+
+/* ========================
+   Móvil (≤ 768px)
+   ======================== */
+@media screen and (max-width: 768px) {
+
+    /* ── Header: ocultar elementos no esenciales en móvil ── */
+    .header-content .header-hide-mobile {
+        display: none !important;
+    }
+
+    .header-content .header-logo img {
+        height: 36px !important;
+        max-width: 140px !important;
+    }
+
+    .header-content > .z-hlayout-inner > .z-space {
+        display: none !important;
+    }
+
+    .header-content .z-separator {
+        display: none !important;
+    }
+
+    /* ── Sidebar: JS maneja show/hide via w.setVisible() + bl.resize() ── */
+
+    /* ── Dashboard cards en columna ── */
+    .dashboard-cards > .z-hlayout-inner {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* ── Modales: ancho completo ── */
+    .modal-responsive {
+        width: 95vw !important;
+        max-width: 95vw !important;
+    }
+
+    /* ── Search bar: wrap ── */
+    .search-bar {
+        flex-wrap: wrap !important;
+        gap: 6px;
+    }
+
+    .search-bar > .z-hlayout-inner {
+        flex: 0 0 auto !important;
+    }
+
+    .search-bar > .z-hlayout-inner:first-child {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+
+    .search-bar .z-textbox {
+        width: 100% !important;
+    }
+
+    .search-bar > .z-hlayout-inner > .z-space {
+        display: none;
+    }
+
+    /* ── Form rows: wrap ── */
+    .form-row {
+        flex-wrap: wrap !important;
+    }
+
+    /* ── Listbox: scroll horizontal + vertical en móvil ── */
+    .z-center-body .z-listbox {
+        overflow: auto !important;
+    }
+
+    .z-center-body .z-listbox-body {
+        overflow: auto !important;
+    }
+
+    .z-center-body .z-listbox-header {
+        overflow-x: auto !important;
+    }
+
+    /* Tablas internas: ancho mínimo para forzar scroll horizontal */
+    .z-center-body .z-listbox-body > table,
+    .z-center-body .z-listbox-header > table {
+        min-width: 700px;
+    }
+
+    /* ── Center body: scroll vertical ── */
+    .z-center-body {
+        overflow: auto !important;
+    }
+}
+
+/* ========================
+   Móvil pequeño (≤ 480px)
+   ======================== */
+@media screen and (max-width: 480px) {
+
+    /* Login full width */
+    .login-box {
+        width: 95vw !important;
+        min-width: 0 !important;
+        padding: 20px !important;
+    }
+
+    /* Form rows verticales */
+    .form-row > .z-hlayout-inner {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+    }
+
+    .form-row .z-label {
+        width: auto !important;
+        margin-bottom: 2px;
+    }
+
+    .form-row .z-textbox,
+    .form-row .z-combobox,
+    .form-row .z-doublebox,
+    .form-row .z-intbox {
+        width: 100% !important;
+    }
+
+    /* Header extra compacto */
+    .header-content .z-combobox {
+        width: 90px !important;
+    }
+
+    .header-content .header-logo img {
+        height: 28px !important;
+        max-width: 100px !important;
+    }
+}

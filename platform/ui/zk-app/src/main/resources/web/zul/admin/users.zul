@@ -1,0 +1,95 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.UserListVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Usuarios" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de acciones -->
+    <hlayout valign="middle" sclass="search-bar">
+        <textbox value="@bind(vm.searchTerm)" placeholder="Buscar por username, email o nombre..."
+                 hflex="1" onOK="@command('search')"/>
+        <button label="Buscar" onClick="@command('search')"/>
+        <space hflex="1"/>
+        <button label="+ Nuevo Usuario" onClick="@command('openNew')"
+                style="background:#27ae60; color:white; border:none;"/>
+    </hlayout>
+
+    <!-- Listado -->
+    <listbox model="@load(vm.users)" selectedItem="@bind(vm.selectedUser)"
+             vflex="1" hflex="1" emptyMessage="No se encontraron usuarios.">
+        <listhead sizable="true">
+            <listheader label="Username" width="140px" sort="auto(username)"/>
+            <listheader label="Email" width="200px" sort="auto(email)"/>
+            <listheader label="Nombre" width="180px" sort="auto(fullName)"/>
+            <listheader label="Activo" width="70px"/>
+            <listheader label="Roles" hflex="1"/>
+            <listheader label="Acciones" width="160px"/>
+        </listhead>
+        <template name="model" var="u">
+            <listitem>
+                <listcell label="@load(u.username)"/>
+                <listcell label="@load(u.email)"/>
+                <listcell label="@load(u.fullName)"/>
+                <listcell label="@load(u.enabled ? 'Sí' : 'No')"/>
+                <listcell label="@load(u.rolesDisplay)"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Editar" onClick="@command('edit', user=u)"
+                                style="font-size:11px;"/>
+                        <button label="Borrar" onClick="@command('delete', user=u)"
+                                style="font-size:11px; color:#e74c3c;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+    <!-- Modal edición/creación -->
+    <window title="@load(vm.formTitle)" visible="@load(vm.editing)"
+            width="500px" border="normal" mode="modal" closable="true"
+            onClose="@command('cancelEdit')" sclass="modal-responsive">
+        <vlayout spacing="10px" style="padding: 15px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Username:" width="120px"/>
+                <textbox value="@bind(vm.editingUser.username)" hflex="1"
+                         constraint="no empty: Username requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Email:" width="120px"/>
+                <textbox value="@bind(vm.editingUser.email)" hflex="1"
+                         type="email" constraint="no empty: Email requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Nombre completo:" width="120px"/>
+                <textbox value="@bind(vm.editingUser.fullName)" hflex="1"
+                         constraint="no empty: Nombre requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Contraseña:" width="120px"/>
+                <textbox value="@bind(vm.editingUser.password)" hflex="1"
+                         type="password" placeholder="Dejar vacío para no cambiar"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Activo:" width="120px"/>
+                <checkbox checked="@bind(vm.editingUser.enabled)"/>
+            </hlayout>
+            <separator/>
+            <label value="Roles:" style="font-weight: bold;"/>
+            <vlayout children="@load(vm.roleChecks)" spacing="4px">
+                <template name="children" var="rc">
+                    <checkbox label="@load(rc.name)" checked="@bind(rc.checked)"/>
+                </template>
+            </vlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('cancelEdit')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+
+</vlayout>
+</window>
+</zk>

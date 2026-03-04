@@ -1,0 +1,74 @@
+<?page title="Platform - Login"?>
+<?meta name="viewport" content="width=device-width, initial-scale=1"?>
+<?link rel="stylesheet" href="~./css/responsive.css"?>
+<zk>
+<style>
+    .login-bg { min-height: 100vh; display: flex;
+                align-items: center; justify-content: center;
+                transition: background 0.3s ease; }
+    .login-box { background: white; border-radius: 8px; padding: 30px;
+                 box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+    .login-title { margin-bottom: 20px; text-align: center; }
+    .login-logo img { max-height: 60px; max-width: 240px; object-fit: contain; }
+    .platform-toggle { font-size: 12px; color: #7f8c8d; cursor: pointer; }
+    .platform-toggle:hover { color: #2c3e50; }
+</style>
+
+<div viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.LoginVM')"
+     sclass="login-bg" hflex="1" vflex="1"
+     style="@load('background:'.concat(vm.brandingColor).concat(';'))">
+    <window id="loginWin" width="380px" border="none" sclass="login-box">
+
+        <div sclass="login-title">
+            <div sclass="login-logo" visible="@load(vm.brandingLogoUrl ne null)">
+                <html content="@load(vm.brandingLogoUrl ne null ? ('&lt;img src=&quot;'.concat(vm.brandingLogoUrl).concat('&quot; style=&quot;max-height:60px; max-width:240px; object-fit:contain;&quot;/>')) : '')"/>
+            </div>
+            <label value="Platform" style="font-size:24px; font-weight:bold; color:#2c3e50;"
+                   visible="@load(vm.brandingLogoUrl eq null)"/>
+        </div>
+
+        <vlayout spacing="12px">
+            <vlayout spacing="4px">
+                <label value="Usuario"/>
+                <textbox value="@bind(vm.username)" hflex="1"
+                         placeholder="@load(vm.platformLogin ? 'platformadmin' : 'usuario')"
+                         onOK="@command('login')"/>
+            </vlayout>
+
+            <vlayout spacing="4px">
+                <label value="Contraseña"/>
+                <textbox value="@bind(vm.password)" hflex="1" type="password"
+                         placeholder="Contraseña" onOK="@command('login')"/>
+            </vlayout>
+
+            <!-- Tenant: solo visible en modo normal -->
+            <vlayout spacing="4px" visible="@load(not vm.platformLogin)">
+                <label value="Tenant"/>
+                <combobox model="@load(vm.tenants)" selectedItem="@bind(vm.selectedTenant)"
+                          onSelect="@command('onTenantChange')"
+                          hflex="1" readonly="true">
+                    <template name="model">
+                        <comboitem label="@load(each)"/>
+                    </template>
+                </combobox>
+            </vlayout>
+
+            <separator/>
+
+            <button label="Ingresar" onClick="@command('login')" hflex="1"
+                    style="@load('background:'.concat(vm.brandingColor).concat('; color:').concat(vm.brandingTextColor).concat('; border:none; padding:8px; font-size:14px;'))"/>
+
+            <label value="@load(vm.errorMessage)" style="color:#e74c3c; font-size:12px;"
+                   visible="@load(not empty vm.errorMessage)"/>
+
+            <separator/>
+
+            <hlayout hflex="1" valign="middle">
+                <checkbox checked="@load(vm.platformLogin)" onCheck="@command('togglePlatformLogin')"
+                          label="Acceso Plataforma" sclass="platform-toggle"/>
+            </hlayout>
+
+        </vlayout>
+    </window>
+</div>
+</zk>

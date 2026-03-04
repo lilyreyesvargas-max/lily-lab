@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Configuración ZK CE para la plataforma.
+    Este archivo se coloca en metainfo/zk/ para que ZK lo detecte
+    automáticamente desde el classpath (dentro de un JAR).
+-->
+<zk>
+    <config-name>platform-zk-app</config-name>
+
+    <!--
+        NO configuramos session-timeout aquí porque ZK 10 CE interpreta
+        el valor como segundos (no minutos). El timeout de sesión HTTP
+        se controla en application.yml: server.servlet.session.timeout=30m
+    -->
+    <session-config>
+        <timer-keep-alive>true</timer-keep-alive>
+    </session-config>
+
+    <!-- Deshabilitar EventThread para compatibilidad con Spring Boot -->
+    <system-config>
+        <disable-event-thread/>
+    </system-config>
+
+    <!-- Tema visual -->
+    <library-property>
+        <name>org.zkoss.zul.theme</name>
+        <value>sapphire</value>
+    </library-property>
+
+    <!-- Mantener sesión activa con timer del cliente -->
+    <library-property>
+        <name>org.zkoss.zk.ui.timer.keep.alive</name>
+        <value>true</value>
+    </library-property>
+</zk>

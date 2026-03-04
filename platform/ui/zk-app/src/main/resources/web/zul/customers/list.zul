@@ -1,0 +1,74 @@
+<zk>
+<window viewModel="@id('vm') @init('com.lreyes.platform.ui.zk.vm.CustomerListVM')"
+        vflex="1" hflex="1">
+<vlayout vflex="1" hflex="1" spacing="10px" style="padding: 10px;">
+
+    <label value="Clientes" style="font-size: 20px; font-weight: bold; color: #2c3e50;"/>
+
+    <!-- Barra de acciones -->
+    <hlayout valign="middle" sclass="search-bar">
+        <textbox value="@bind(vm.searchTerm)" placeholder="Buscar por nombre o email..."
+                 hflex="1" onOK="@command('search')"/>
+        <button label="Buscar" onClick="@command('search')"/>
+        <space hflex="1"/>
+        <button label="+ Nuevo Cliente" onClick="@command('openNew')"
+                style="background:#27ae60; color:white; border:none;"/>
+    </hlayout>
+
+    <!-- Listado -->
+    <listbox model="@load(vm.customers)" selectedItem="@bind(vm.selectedCustomer)"
+             vflex="1" hflex="1" emptyMessage="No se encontraron clientes.">
+        <listhead sizable="true">
+            <listheader label="Nombre" width="200px" sort="auto(name)"/>
+            <listheader label="Email" width="220px" sort="auto(email)"/>
+            <listheader label="Teléfono" width="140px"/>
+            <listheader label="Acciones" width="160px"/>
+        </listhead>
+        <template name="model" var="c">
+            <listitem>
+                <listcell label="@load(c.name)"/>
+                <listcell label="@load(c.email)"/>
+                <listcell label="@load(c.phone)"/>
+                <listcell>
+                    <hlayout spacing="4px">
+                        <button label="Editar" onClick="@command('edit', customer=c)"
+                                style="font-size:11px;"/>
+                        <button label="Borrar" onClick="@command('delete', customer=c)"
+                                style="font-size:11px; color:#e74c3c;"/>
+                    </hlayout>
+                </listcell>
+            </listitem>
+        </template>
+    </listbox>
+
+    <!-- Modal edición/creación -->
+    <window title="@load(vm.formTitle)" visible="@load(vm.editing)"
+            width="420px" border="normal" mode="modal" closable="true"
+            onClose="@command('cancelEdit')" sclass="modal-responsive">
+        <vlayout spacing="10px" style="padding: 15px;">
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Nombre:" width="80px"/>
+                <textbox value="@bind(vm.editingCustomer.name)" hflex="1"
+                         constraint="no empty: Nombre requerido"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Email:" width="80px"/>
+                <textbox value="@bind(vm.editingCustomer.email)" hflex="1"
+                         type="email"/>
+            </hlayout>
+            <hlayout valign="middle" sclass="form-row">
+                <label value="Teléfono:" width="80px"/>
+                <textbox value="@bind(vm.editingCustomer.phone)" hflex="1"/>
+            </hlayout>
+            <separator/>
+            <hlayout spacing="8px">
+                <button label="Guardar" onClick="@command('save')"
+                        style="background:#3498db; color:white; border:none;"/>
+                <button label="Cancelar" onClick="@command('cancelEdit')"/>
+            </hlayout>
+        </vlayout>
+    </window>
+
+</vlayout>
+</window>
+</zk>
