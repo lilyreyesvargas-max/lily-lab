@@ -1,8 +1,10 @@
 package com.lreyes.platform.ui.zk.vm;
 
+import com.lreyes.platform.core.authsecurity.RoleConstants;
 import com.lreyes.platform.core.catalogs.Catalog;
 import com.lreyes.platform.core.catalogs.CatalogService;
 import com.lreyes.platform.core.tenancy.TenantContext;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.ui.zk.model.CatalogItem;
 import com.lreyes.platform.ui.zk.model.UiUser;
 import org.zkoss.bind.annotation.BindingParam;
@@ -36,7 +38,7 @@ public class CatalogListVM {
 
     @Init
     public void init() {
-        user = (UiUser) Sessions.getCurrent().getAttribute("user");
+        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN);
         catalogService = SpringUtil.getApplicationContext().getBean(CatalogService.class);
         loadTypes();
         loadData();

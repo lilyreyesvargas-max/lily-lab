@@ -121,15 +121,17 @@ public class LayoutVM {
                     .findFirst().orElse(null);
         }
 
-        // Establecer tenant en contexto
+        // Establecer tenant en contexto y limpiar al terminar init
         if (currentTenant != null) {
             TenantContext.setCurrentTenant(currentTenant);
         }
-
-        // Cargar branding del tenant actual
-        loadBranding();
-
-        buildMenu();
+        try {
+            // Cargar branding del tenant actual
+            loadBranding();
+            buildMenu();
+        } finally {
+            TenantContext.clear();
+        }
 
         // Si venimos de un cambio de tenant, restaurar la pagina previa
         String resumePage = (String) Sessions.getCurrent().getAttribute("resumePage");
@@ -277,7 +279,6 @@ public class LayoutVM {
             UiUser updated = new UiUser(user.getUsername(), currentTenant, user.getRoles(), true);
             Sessions.getCurrent().setAttribute("user", updated);
             user = updated;
-            TenantContext.setCurrentTenant(currentTenant);
             Sessions.getCurrent().setAttribute("resumePage", currentPage);
             Clients.evalJavaScript("window.location.replace('/zul/index.zul?_t=" + System.currentTimeMillis() + "')");
         }

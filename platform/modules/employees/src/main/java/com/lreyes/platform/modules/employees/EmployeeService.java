@@ -14,12 +14,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class EmployeeService {
+public class EmployeeService implements EmployeeServicePort {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
@@ -45,6 +46,11 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employee", id));
         return employeeMapper.toResponse(employee);
+    }
+
+    public Optional<EmployeeResponse> findByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .map(employeeMapper::toResponse);
     }
 
     @Transactional

@@ -17,10 +17,9 @@ import com.lreyes.platform.core.tenancy.platform.TenantRegistryService;
 import com.lreyes.platform.core.tenancy.platform.TenantSchema;
 import com.lreyes.platform.core.tenancy.platform.TenantSchemaService;
 import com.lreyes.platform.core.workflow.WorkflowService;
-import com.lreyes.platform.modules.customers.CustomerService;
+import com.lreyes.platform.modules.customers.CustomerServicePort;
 import com.lreyes.platform.modules.customers.dto.CreateCustomerRequest;
-import com.lreyes.platform.modules.employees.EmployeeRepository;
-import com.lreyes.platform.modules.employees.EmployeeService;
+import com.lreyes.platform.modules.employees.EmployeeServicePort;
 import com.lreyes.platform.modules.employees.dto.CreateEmployeeRequest;
 import com.lreyes.platform.ui.zk.model.AssistantMessage;
 import com.lreyes.platform.ui.zk.model.UiUser;
@@ -50,8 +49,8 @@ public class AssistantVM {
     private String userInput;
 
     // Servicios (lazy)
-    private CustomerService customerService;
-    private EmployeeService employeeService;
+    private CustomerServicePort customerService;
+    private EmployeeServicePort employeeService;
     private WorkflowService workflowService;
     private UserService userService;
     private UserRepository userRepository;
@@ -60,7 +59,6 @@ public class AssistantVM {
     private TenantRegistryService tenantRegistryService;
     private TenantSchemaService tenantSchemaService;
     private PlatformUserService platformUserService;
-    private EmployeeRepository employeeRepository;
     private RoleSchemaService roleSchemaService;
 
     @Init
@@ -477,7 +475,7 @@ public class AssistantVM {
             String email = data.get("email");
             String empMsg = "";
             if (email != null && !email.isBlank()) {
-                if (getEmployeeRepository().findByEmail(email).isEmpty()) {
+                if (getEmployeeService().findByEmail(email).isEmpty()) {
                     String fullName = data.get("fullName").trim();
                     int spaceIdx = fullName.indexOf(' ');
                     String firstName = spaceIdx > 0 ? fullName.substring(0, spaceIdx) : fullName;
@@ -803,17 +801,13 @@ public class AssistantVM {
     // ── Lazy service getters ──
     // ══════════════════════════════════════════════════════════════
 
-    private CustomerService getCustomerService() {
-        if (customerService == null) customerService = SpringUtil.getApplicationContext().getBean(CustomerService.class);
+    private CustomerServicePort getCustomerService() {
+        if (customerService == null) customerService = SpringUtil.getApplicationContext().getBean(CustomerServicePort.class);
         return customerService;
     }
-    private EmployeeService getEmployeeService() {
-        if (employeeService == null) employeeService = SpringUtil.getApplicationContext().getBean(EmployeeService.class);
+    private EmployeeServicePort getEmployeeService() {
+        if (employeeService == null) employeeService = SpringUtil.getApplicationContext().getBean(EmployeeServicePort.class);
         return employeeService;
-    }
-    private EmployeeRepository getEmployeeRepository() {
-        if (employeeRepository == null) employeeRepository = SpringUtil.getApplicationContext().getBean(EmployeeRepository.class);
-        return employeeRepository;
     }
     private WorkflowService getWorkflowService() {
         if (workflowService == null) workflowService = SpringUtil.getApplicationContext().getBean(WorkflowService.class);

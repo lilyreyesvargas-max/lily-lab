@@ -93,11 +93,24 @@ public class PlatformUserService {
 
     /**
      * Seedea el platform admin por defecto si no existe.
+     * <p>
+     * Lee las credenciales desde variables de entorno:
+     * <ul>
+     *   <li>{@code PLATFORM_ADMIN_USER} (default: {@code platformadmin})</li>
+     *   <li>{@code PLATFORM_ADMIN_PASSWORD} — si está ausente o vacío, el seed se omite.</li>
+     * </ul>
      */
     public void seedDefaultAdmin() {
-        if (!userRepo.existsByUsername("platformadmin")) {
-            create("platformadmin", "admin123", "admin@platform.local", "Platform Administrator");
-            log.info("Platform admin por defecto creado: platformadmin / admin123");
+        String username = System.getenv().getOrDefault("PLATFORM_ADMIN_USER", "platformadmin");
+        String password = System.getenv("PLATFORM_ADMIN_PASSWORD");
+        if (password == null || password.isBlank()) {
+            log.warn("PLATFORM_ADMIN_PASSWORD no definido — seed del admin omitido. " +
+                    "Define la variable de entorno para crear el usuario inicial.");
+            return;
+        }
+        if (!userRepo.existsByUsername(username)) {
+            create(username, password, "admin@platform.local", "Platform Administrator");
+            log.info("Platform admin creado: {}", username);
         }
     }
 }

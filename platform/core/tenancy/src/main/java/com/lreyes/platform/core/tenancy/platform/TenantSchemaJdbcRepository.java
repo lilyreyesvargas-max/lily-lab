@@ -4,9 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -60,13 +65,18 @@ public class TenantSchemaJdbcRepository {
     }
 
     public TenantSchema insert(TenantSchema schema) {
-        Integer id = jdbc.queryForObject(
-                "INSERT INTO tenant_schemas (tenant_id, schema_name, schema_type, active) "
-                        + "VALUES (?, ?, ?, ?) RETURNING id",
-                Integer.class,
-                schema.getTenantId(), schema.getSchemaName(),
-                schema.getSchemaType(), schema.isActive());
-        schema.setId(id);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(con -> {
+            PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO tenant_schemas (tenant_id, schema_name, schema_type, active) VALUES (?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, schema.getTenantId());
+            ps.setString(2, schema.getSchemaName());
+            ps.setString(3, schema.getSchemaType());
+            ps.setBoolean(4, schema.isActive());
+            return ps;
+        }, keyHolder);
+        schema.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         return schema;
     }
 

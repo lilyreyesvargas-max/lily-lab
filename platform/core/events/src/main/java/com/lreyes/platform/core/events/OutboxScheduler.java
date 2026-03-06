@@ -1,7 +1,7 @@
 package com.lreyes.platform.core.events;
 
 import com.lreyes.platform.core.tenancy.TenantContext;
-import com.lreyes.platform.core.tenancy.TenantProperties;
+import com.lreyes.platform.core.tenancy.platform.TenantRegistryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,8 +10,9 @@ import org.springframework.stereotype.Component;
 /**
  * Job periódico que procesa eventos pendientes en la tabla outbox.
  * <p>
- * Itera por cada tenant registrado, establece el contexto y procesa
- * un batch de eventos PENDING.
+ * Itera por cada tenant activo en BD (no desde YAML), establece el contexto
+ * y procesa un batch de eventos PENDING. Usar BD garantiza que tenants
+ * creados en runtime también sean procesados.
  */
 @Component
 @RequiredArgsConstructor
@@ -21,11 +22,11 @@ public class OutboxScheduler {
     private static final int BATCH_SIZE = 50;
 
     private final OutboxService outboxService;
-    private final TenantProperties tenantProperties;
+    private final TenantRegistryService tenantRegistryService;
 
     @Scheduled(fixedDelayString = "${app.events.outbox-poll-ms:10000}")
     public void processOutbox() {
-        for (String tenant : tenantProperties.getTenants()) {
+        for (String tenant : tenantRegistryService.getActiveTenantNames()) {
             try {
                 TenantContext.setCurrentTenant(tenant);
                 int processed = outboxService.processPending(BATCH_SIZE);

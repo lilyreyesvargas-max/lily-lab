@@ -42,7 +42,7 @@ public class ModulesHealthIndicator implements HealthIndicator {
             if (!present) allUp = false;
         }
 
-        Health.Builder builder = allUp ? Health.up() : Health.up();
+        Health.Builder builder = allUp ? Health.up() : Health.down();
         details.forEach(builder::withDetail);
         return builder.build();
     }

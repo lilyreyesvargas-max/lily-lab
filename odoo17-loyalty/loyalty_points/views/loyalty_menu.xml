@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_loyalty_root" name="Fidelidad" sequence="30" web_icon="loyalty_points,static/description/icon.png"/>
+    <menuitem id="menu_loyalty_rules" name="Reglas de Fidelidad" parent="menu_loyalty_root" action="action_loyalty_rule" sequence="10"/>
+    <menuitem id="menu_loyalty_transactions" name="Transacciones" parent="menu_loyalty_root" action="action_loyalty_transaction" sequence="20"/>
+</odoo>

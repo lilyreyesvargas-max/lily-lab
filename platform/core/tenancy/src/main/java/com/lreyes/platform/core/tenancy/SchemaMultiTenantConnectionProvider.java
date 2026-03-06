@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomi
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -69,7 +70,9 @@ public class SchemaMultiTenantConnectionProvider
         String sql = isH2
                 ? "SET SCHEMA \"" + resolvedSchema + "\""
                 : "SET search_path TO " + resolvedSchema;
-        connection.createStatement().execute(sql);
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute(sql);
+        }
     }
 
     /**
@@ -82,9 +85,13 @@ public class SchemaMultiTenantConnectionProvider
         String dbProduct = connection.getMetaData().getDatabaseProductName();
         boolean isH2 = dbProduct.toLowerCase().contains("h2");
         if (isH2) {
-            connection.createStatement().execute("SET SCHEMA \"PUBLIC\"");
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("SET SCHEMA \"PUBLIC\"");
+            }
         } else {
-            connection.createStatement().execute("RESET search_path");
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("RESET search_path");
+            }
         }
     }
 

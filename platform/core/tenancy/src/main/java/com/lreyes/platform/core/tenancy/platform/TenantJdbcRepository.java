@@ -4,10 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -64,12 +69,19 @@ public class TenantJdbcRepository {
     }
 
     public Tenant insert(Tenant tenant) {
-        Integer id = jdbc.queryForObject(
-                "INSERT INTO tenants (name, display_name, active, primary_color, logo_path) VALUES (?, ?, ?, ?, ?) RETURNING id",
-                Integer.class,
-                tenant.getName(), tenant.getDisplayName(), tenant.isActive(),
-                tenant.getPrimaryColor(), tenant.getLogoPath());
-        tenant.setId(id);
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbc.update(con -> {
+            PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO tenants (name, display_name, active, primary_color, logo_path) VALUES (?, ?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, tenant.getName());
+            ps.setString(2, tenant.getDisplayName());
+            ps.setBoolean(3, tenant.isActive());
+            ps.setString(4, tenant.getPrimaryColor());
+            ps.setString(5, tenant.getLogoPath());
+            return ps;
+        }, keyHolder);
+        tenant.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         return tenant;
     }
 

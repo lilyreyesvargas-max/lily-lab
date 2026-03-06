@@ -21,6 +21,12 @@
             <artifactId>shared-domain-core</artifactId>
         </dependency>
 
+        <!-- Necesario para TenantRegistryService (despliegue de procesos por tenant desde BD) -->
+        <dependency>
+            <groupId>com.lreyes.platform</groupId>
+            <artifactId>core-tenancy</artifactId>
+        </dependency>
+
         <!-- Flowable BPMN engine + Spring Boot autoconfiguration -->
         <dependency>
             <groupId>org.flowable</groupId>

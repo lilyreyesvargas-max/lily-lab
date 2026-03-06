@@ -1,15 +1,14 @@
 package com.lreyes.platform.core.workflow;
 
+import com.lreyes.platform.core.tenancy.platform.TenantRegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.context.properties.bind.Bindable;
-import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -27,14 +26,14 @@ import java.util.List;
 public class FlowableMultiTenantConfig {
 
     @Bean
-    ApplicationRunner deployProcessesPerTenant(RepositoryService repositoryService, Environment env) {
+    @Order(2)
+    ApplicationRunner deployProcessesPerTenant(RepositoryService repositoryService,
+                                               TenantRegistryService tenantRegistryService) {
         return args -> {
-            List<String> tenants = Binder.get(env)
-                    .bind("app.tenants", Bindable.listOf(String.class))
-                    .orElse(List.of());
+            List<String> tenants = tenantRegistryService.getActiveTenantNames();
 
             if (tenants.isEmpty()) {
-                log.warn("No hay tenants configurados (app.tenants). Procesos solo disponibles sin tenant.");
+                log.warn("No hay tenants activos en BD. Procesos solo disponibles sin tenant.");
                 return;
             }
 

@@ -62,11 +62,10 @@ public class PlatformUserJdbcRepository {
     }
 
     public PlatformUser insert(PlatformUser user) {
-        UUID id = jdbc.queryForObject(
-                "INSERT INTO platform_users (username, password_hash, email, full_name, enabled) "
-                        + "VALUES (?, ?, ?, ?, ?) RETURNING id",
-                UUID.class,
-                user.getUsername(), user.getPasswordHash(),
+        UUID id = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO platform_users (id, username, password_hash, email, full_name, enabled) VALUES (?, ?, ?, ?, ?, ?)",
+                id, user.getUsername(), user.getPasswordHash(),
                 user.getEmail(), user.getFullName(), user.isEnabled());
         user.setId(id);
         return user;

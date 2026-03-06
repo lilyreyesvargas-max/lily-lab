@@ -1,15 +1,16 @@
 package com.lreyes.platform.ui.zk.vm;
 
+import com.lreyes.platform.core.authsecurity.RoleConstants;
 import com.lreyes.platform.core.tenancy.Role;
 import com.lreyes.platform.core.tenancy.RoleService;
 import com.lreyes.platform.core.tenancy.TenantContext;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.ui.zk.model.RoleItem;
 import com.lreyes.platform.ui.zk.model.UiUser;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkplus.spring.SpringUtil;
@@ -34,7 +35,7 @@ public class RoleListVM {
 
     @Init
     public void init() {
-        user = (UiUser) Sessions.getCurrent().getAttribute("user");
+        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN);
         roleService = SpringUtil.getApplicationContext().getBean(RoleService.class);
         loadData();
     }

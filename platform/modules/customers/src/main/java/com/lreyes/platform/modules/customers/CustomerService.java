@@ -19,7 +19,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class CustomerService {
+public class CustomerService implements CustomerServicePort {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;

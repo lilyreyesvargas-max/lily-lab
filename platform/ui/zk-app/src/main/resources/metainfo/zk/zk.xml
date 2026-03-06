@@ -32,4 +32,9 @@
         <name>org.zkoss.zk.ui.timer.keep.alive</name>
         <value>true</value>
     </library-property>
+
+    <!-- Listener de seguridad: redirige al login si no autenticado -->
+    <listener>
+        <listener-class>com.lreyes.platform.ui.zk.ZkSecurityInit</listener-class>
+    </listener>
 </zk>

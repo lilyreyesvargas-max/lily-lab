@@ -1,10 +1,12 @@
 package com.lreyes.platform.ui.zk.vm;
 
+import com.lreyes.platform.core.authsecurity.RoleConstants;
 import com.lreyes.platform.core.tenancy.TenantContext;
 import com.lreyes.platform.core.tenancy.User;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.core.tenancy.UserRepository;
 import com.lreyes.platform.core.tenancy.UserService;
-import com.lreyes.platform.modules.employees.EmployeeService;
+import com.lreyes.platform.modules.employees.EmployeeServicePort;
 import com.lreyes.platform.modules.employees.dto.CreateEmployeeRequest;
 import com.lreyes.platform.modules.employees.dto.EmployeeResponse;
 import com.lreyes.platform.modules.employees.dto.UpdateEmployeeRequest;
@@ -15,7 +17,6 @@ import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkplus.spring.SpringUtil;
@@ -28,7 +29,7 @@ import java.util.UUID;
 @VariableResolver(org.zkoss.zkplus.spring.DelegatingVariableResolver.class)
 public class EmployeeListVM {
 
-    private EmployeeService employeeService;
+    private EmployeeServicePort employeeService;
     private UiUser user;
 
     private List<EmployeeItem> employees = new ArrayList<>();
@@ -42,8 +43,8 @@ public class EmployeeListVM {
 
     @Init
     public void init() {
-        user = (UiUser) Sessions.getCurrent().getAttribute("user");
-        employeeService = SpringUtil.getApplicationContext().getBean(EmployeeService.class);
+        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN, RoleConstants.GESTOR);
+        employeeService = SpringUtil.getApplicationContext().getBean(EmployeeServicePort.class);
         loadData();
     }
 

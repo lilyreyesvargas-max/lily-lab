@@ -2,12 +2,12 @@ package com.lreyes.platform.ui.zk.vm;
 
 import com.lreyes.platform.core.workflow.WorkflowService;
 import com.lreyes.platform.core.workflow.dto.TaskResponse;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.ui.zk.model.UiUser;
 import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkplus.spring.SpringUtil;
 
@@ -44,7 +44,7 @@ public class WorkflowTasksVM {
 
     @Init
     public void init() {
-        user = (UiUser) Sessions.getCurrent().getAttribute("user");
+        user = ZkSecurityHelper.requireAuthenticated();
         try {
             workflowService = SpringUtil.getApplicationContext().getBean(WorkflowService.class);
             refreshTasks();

@@ -1,7 +1,9 @@
 package com.lreyes.platform.ui.zk.vm;
 
+import com.lreyes.platform.core.authsecurity.RoleConstants;
 import com.lreyes.platform.core.tenancy.TenantContext;
-import com.lreyes.platform.modules.customers.CustomerService;
+import com.lreyes.platform.modules.customers.CustomerServicePort;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.modules.customers.dto.CreateCustomerRequest;
 import com.lreyes.platform.modules.customers.dto.CustomerResponse;
 import com.lreyes.platform.modules.customers.dto.UpdateCustomerRequest;
@@ -12,7 +14,6 @@ import org.zkoss.bind.annotation.BindingParam;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
-import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.select.annotation.VariableResolver;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zkplus.spring.SpringUtil;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @VariableResolver(org.zkoss.zkplus.spring.DelegatingVariableResolver.class)
 public class CustomerListVM {
 
-    private CustomerService customerService;
+    private CustomerServicePort customerService;
     private UiUser user;
 
     private List<CustomerItem> customers = new ArrayList<>();
@@ -37,8 +38,8 @@ public class CustomerListVM {
 
     @Init
     public void init() {
-        user = (UiUser) Sessions.getCurrent().getAttribute("user");
-        customerService = SpringUtil.getApplicationContext().getBean(CustomerService.class);
+        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN, RoleConstants.GESTOR);
+        customerService = SpringUtil.getApplicationContext().getBean(CustomerServicePort.class);
         loadData();
     }
 

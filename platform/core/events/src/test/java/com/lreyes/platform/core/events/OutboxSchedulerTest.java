@@ -1,6 +1,6 @@
 package com.lreyes.platform.core.events;
 
-import com.lreyes.platform.core.tenancy.TenantProperties;
+import com.lreyes.platform.core.tenancy.platform.TenantRegistryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,15 +18,15 @@ class OutboxSchedulerTest {
     @Mock
     private OutboxService outboxService;
 
-    private TenantProperties tenantProperties;
+    @Mock
+    private TenantRegistryService tenantRegistryService;
 
     private OutboxScheduler scheduler;
 
     @BeforeEach
     void setUp() {
-        tenantProperties = new TenantProperties();
-        tenantProperties.setTenants(List.of("acme", "globex"));
-        scheduler = new OutboxScheduler(outboxService, tenantProperties);
+        when(tenantRegistryService.getActiveTenantNames()).thenReturn(List.of("acme", "globex"));
+        scheduler = new OutboxScheduler(outboxService, tenantRegistryService);
     }
 
     @Test

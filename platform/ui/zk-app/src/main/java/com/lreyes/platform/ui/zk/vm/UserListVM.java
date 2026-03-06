@@ -1,12 +1,13 @@
 package com.lreyes.platform.ui.zk.vm;
 
+import com.lreyes.platform.core.authsecurity.RoleConstants;
 import com.lreyes.platform.core.tenancy.Role;
 import com.lreyes.platform.core.tenancy.RoleService;
+import com.lreyes.platform.ui.zk.ZkSecurityHelper;
 import com.lreyes.platform.core.tenancy.TenantContext;
 import com.lreyes.platform.core.tenancy.User;
 import com.lreyes.platform.core.tenancy.UserService;
-import com.lreyes.platform.modules.employees.EmployeeRepository;
-import com.lreyes.platform.modules.employees.EmployeeService;
+import com.lreyes.platform.modules.employees.EmployeeServicePort;
 import com.lreyes.platform.modules.employees.dto.CreateEmployeeRequest;
 import com.lreyes.platform.ui.zk.model.RoleCheckItem;
 import com.lreyes.platform.ui.zk.model.UiUser;
@@ -45,7 +46,7 @@ public class UserListVM {
 
     @Init
     public void init() {
-        uiUser = (UiUser) Sessions.getCurrent().getAttribute("user");
+        uiUser = ZkSecurityHelper.requireRole(RoleConstants.ADMIN);
         userService = SpringUtil.getApplicationContext().getBean(UserService.class);
         roleService = SpringUtil.getApplicationContext().getBean(RoleService.class);
         loadData();
@@ -157,9 +158,8 @@ public class UserListVM {
 
             String email = editingUser.getEmail();
             if (email != null && !email.isBlank()) {
-                EmployeeRepository empRepo = SpringUtil.getApplicationContext().getBean(EmployeeRepository.class);
-                if (empRepo.findByEmail(email).isEmpty()) {
-                    EmployeeService empService = SpringUtil.getApplicationContext().getBean(EmployeeService.class);
+                EmployeeServicePort empService = SpringUtil.getApplicationContext().getBean(EmployeeServicePort.class);
+                if (empService.findByEmail(email).isEmpty()) {
                     String fullName = editingUser.getFullName().trim();
                     int spaceIdx = fullName.indexOf(' ');
                     String firstName;

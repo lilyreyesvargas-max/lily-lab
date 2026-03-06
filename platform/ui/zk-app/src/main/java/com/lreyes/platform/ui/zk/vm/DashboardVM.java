@@ -7,8 +7,8 @@ import com.lreyes.platform.core.tenancy.platform.TenantRegistryService;
 import com.lreyes.platform.core.tenancy.platform.TenantSchema;
 import com.lreyes.platform.core.tenancy.platform.TenantSchemaService;
 import com.lreyes.platform.core.workflow.WorkflowService;
-import com.lreyes.platform.modules.customers.CustomerService;
-import com.lreyes.platform.modules.employees.EmployeeService;
+import com.lreyes.platform.modules.customers.CustomerServicePort;
+import com.lreyes.platform.modules.employees.EmployeeServicePort;
 import com.lreyes.platform.ui.zk.model.UiUser;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.zk.ui.Sessions;
@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 public class DashboardVM {
 
     @WireVariable
-    private CustomerService customerService;
+    private CustomerServicePort customerService;
 
     @WireVariable
-    private EmployeeService employeeService;
+    private EmployeeServicePort employeeService;
 
     @WireVariable
     private WorkflowService workflowService;

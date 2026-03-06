@@ -41,6 +41,9 @@ public class FlowableDatasourceConfig {
             ds.setDriverClassName(driver);
             ds.setPoolName("FlowablePool");
             ds.setMaximumPoolSize(5);
+            // Garantiza que el search_path apunte al schema 'platform' donde Flowable
+            // crea sus tablas act_*, independientemente del search_path por defecto del servidor.
+            ds.setConnectionInitSql("SET search_path TO platform");
 
             log.info("Flowable EngineConfigurer: DataSource separado con pool 'FlowablePool', url='{}'", url);
             engineConfig.setDataSource(ds);
