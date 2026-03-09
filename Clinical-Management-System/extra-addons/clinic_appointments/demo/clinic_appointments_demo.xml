@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="appt_john_mg_1" model="clinic.appointment">
+        <field name="patient_id" ref="clinic_patients.patient_john_doe"/>
+        <field name="physician_id" ref="base.user_admin"/>
+        <field name="specialty_id" ref="clinic_core.specialty_med_general"/>
+        <field name="appointment_date">2024-03-15 09:00:00</field>
+        <field name="duration">0.5</field>
+        <field name="reason">Annual checkup</field>
+        <field name="state">completed</field>
+    </record>
+
+    <record id="appt_mary_gine_1" model="clinic.appointment">
+        <field name="patient_id" ref="clinic_patients.patient_mary_smith"/>
+        <field name="physician_id" ref="base.user_admin"/>
+        <field name="specialty_id" ref="clinic_core.specialty_ginecologia"/>
+        <field name="appointment_date">2024-03-16 10:00:00</field>
+        <field name="duration">1.0</field>
+        <field name="reason">Prenatal visit</field>
+        <field name="state">confirmed</field>
+    </record>
+
+    <record id="appt_james_oft_1" model="clinic.appointment">
+        <field name="patient_id" ref="clinic_patients.patient_james_williams"/>
+        <field name="physician_id" ref="base.user_admin"/>
+        <field name="specialty_id" ref="clinic_core.specialty_oftalmologia"/>
+        <field name="appointment_date">2024-03-17 11:00:00</field>
+        <field name="duration">0.5</field>
+        <field name="reason">Vision check</field>
+        <field name="state">scheduled</field>
+    </record>
+</odoo>

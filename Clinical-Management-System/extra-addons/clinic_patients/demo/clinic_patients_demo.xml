@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="insurer_bcbs" model="clinic.insurer">
+        <field name="name">Blue Cross PPO</field>
+        <field name="code">BCBS</field>
+        <field name="payer_id">BCBS001</field>
+        <field name="phone">800-555-1001</field>
+        <field name="email">providers@bluecross.example.com</field>
+    </record>
+    <record id="insurer_uhc" model="clinic.insurer">
+        <field name="name">United Health HMO</field>
+        <field name="code">UHC</field>
+        <field name="payer_id">UHC002</field>
+        <field name="phone">800-555-1002</field>
+    </record>
+
+    <record id="plan_bcbs_ppo_gold" model="clinic.insurer.plan">
+        <field name="insurer_id" ref="insurer_bcbs"/>
+        <field name="name">PPO Gold</field>
+        <field name="plan_code">BCBS-PPO-GOLD</field>
+        <field name="coverage_type">ppo</field>
+        <field name="deductible">1500.00</field>
+        <field name="copay">30.00</field>
+        <field name="coinsurance">20.0</field>
+    </record>
+    <record id="plan_uhc_hmo_silver" model="clinic.insurer.plan">
+        <field name="insurer_id" ref="insurer_uhc"/>
+        <field name="name">HMO Silver</field>
+        <field name="plan_code">UHC-HMO-SILVER</field>
+        <field name="coverage_type">hmo</field>
+        <field name="deductible">2000.00</field>
+        <field name="copay">40.00</field>
+        <field name="coinsurance">30.0</field>
+    </record>
+
+    <record id="patient_john_doe" model="clinic.patient">
+        <field name="name">John Doe</field>
+        <field name="date_of_birth">1980-01-15</field>
+        <field name="gender">male</field>
+        <field name="blood_type">O+</field>
+        <field name="phone">555-0101</field>
+        <field name="email">john.doe@example.com</field>
+    </record>
+    <record id="patient_mary_smith" model="clinic.patient">
+        <field name="name">Mary Smith</field>
+        <field name="date_of_birth">1975-06-22</field>
+        <field name="gender">female</field>
+        <field name="blood_type">A+</field>
+        <field name="phone">555-0102</field>
+    </record>
+    <record id="patient_james_williams" model="clinic.patient">
+        <field name="name">James Williams</field>
+        <field name="date_of_birth">1990-03-10</field>
+        <field name="gender">male</field>
+        <field name="blood_type">B+</field>
+        <field name="phone">555-0103</field>
+    </record>
+    <record id="patient_susan_jones" model="clinic.patient">
+        <field name="name">Susan Jones</field>
+        <field name="date_of_birth">1965-11-05</field>
+        <field name="gender">female</field>
+        <field name="blood_type">AB-</field>
+        <field name="phone">555-0104</field>
+    </record>
+    <record id="patient_robert_garcia" model="clinic.patient">
+        <field name="name">Robert Garcia</field>
+        <field name="date_of_birth">1958-08-30</field>
+        <field name="gender">male</field>
+        <field name="blood_type">O-</field>
+        <field name="phone">555-0105</field>
+    </record>
+
+    <!-- Policies -->
+    <record id="policy_john_bcbs" model="clinic.patient.policy">
+        <field name="patient_id" ref="patient_john_doe"/>
+        <field name="insurer_id" ref="insurer_bcbs"/>
+        <field name="plan_id" ref="plan_bcbs_ppo_gold"/>
+        <field name="policy_number">POL-BCBS-001</field>
+        <field name="member_id">INS123456</field>
+        <field name="effective_date">2024-01-01</field>
+        <field name="is_primary">True</field>
+        <field name="state">active</field>
+    </record>
+    <record id="policy_mary_uhc" model="clinic.patient.policy">
+        <field name="patient_id" ref="patient_mary_smith"/>
+        <field name="insurer_id" ref="insurer_uhc"/>
+        <field name="plan_id" ref="plan_uhc_hmo_silver"/>
+        <field name="policy_number">POL-UHC-002</field>
+        <field name="member_id">INS789012</field>
+        <field name="effective_date">2024-01-01</field>
+        <field name="is_primary">True</field>
+        <field name="state">active</field>
+    </record>
+</odoo>

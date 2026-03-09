@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_ehr_encounter_form" model="ir.ui.view">
+        <field name="name">clinic.ehr.encounter.form</field>
+        <field name="model">clinic.ehr.encounter</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_start" string="Start" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_complete" string="Complete" type="object"
+                            class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ['completed','cancelled']"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ['cancelled']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="ref" readonly="1"/>
+                            <field name="patient_id"/>
+                            <field name="physician_id"/>
+                            <field name="specialty_id"/>
+                        </group>
+                        <group>
+                            <field name="encounter_date"/>
+                            <field name="company_id"/>
+                            <field name="policy_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Clinical Notes">
+                            <group string="Chief Complaint"><field name="chief_complaint" nolabel="1"/></group>
+                            <group string="HPI"><field name="history_present_illness" nolabel="1"/></group>
+                            <group string="Physical Exam"><field name="physical_exam" nolabel="1"/></group>
+                            <group string="Assessment"><field name="assessment" nolabel="1"/></group>
+                            <group string="Plan"><field name="plan" nolabel="1"/></group>
+                        </page>
+                        <page string="Diagnoses">
+                            <field name="diagnosis_ids">
+                                <list editable="bottom">
+                                    <field name="icd10_id"/>
+                                    <field name="diagnosis_type"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Vital Signs">
+                            <group>
+                                <group string="Cardiovascular">
+                                    <field name="bp_systolic"/>
+                                    <field name="bp_diastolic"/>
+                                    <field name="heart_rate"/>
+                                    <field name="oxygen_saturation"/>
+                                </group>
+                                <group string="Anthropometric">
+                                    <field name="weight"/>
+                                    <field name="height"/>
+                                    <field name="bmi" readonly="1"/>
+                                    <field name="temperature"/>
+                                    <field name="respiratory_rate"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Gynecology">
+                            <group>
+                                <group>
+                                    <field name="lmp"/>
+                                    <field name="gestational_age" readonly="1"/>
+                                    <field name="gravida"/>
+                                    <field name="para"/>
+                                    <field name="abortus"/>
+                                </group>
+                            </group>
+                            <group string="Notes"><field name="gynecological_notes" nolabel="1"/></group>
+                        </page>
+                        <page string="Ophthalmology">
+                            <group>
+                                <group string="Right Eye (OD)">
+                                    <field name="od_sphere"/>
+                                    <field name="od_cylinder"/>
+                                    <field name="od_axis"/>
+                                    <field name="od_va"/>
+                                    <field name="iop_od"/>
+                                </group>
+                                <group string="Left Eye (OI)">
+                                    <field name="oi_sphere"/>
+                                    <field name="oi_cylinder"/>
+                                    <field name="oi_axis"/>
+                                    <field name="oi_va"/>
+                                    <field name="iop_oi"/>
+                                </group>
+                            </group>
+                            <group string="Notes"><field name="ophthalmic_notes" nolabel="1"/></group>
+                        </page>
+                        <page string="Stomatology">
+                            <group>
+                                <field name="dental_procedure"/>
+                                <field name="periodontal_notes"/>
+                                <field name="tooth_chart"/>
+                            </group>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_ehr_encounter_list" model="ir.ui.view">
+        <field name="name">clinic.ehr.encounter.list</field>
+        <field name="model">clinic.ehr.encounter</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancelled'" decoration-success="state == 'completed'">
+                <field name="ref"/>
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <field name="specialty_id"/>
+                <field name="encounter_date"/>
+                <field name="company_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_clinic_ehr_encounter_search" model="ir.ui.view">
+        <field name="name">clinic.ehr.encounter.search</field>
+        <field name="model">clinic.ehr.encounter</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <field name="ref"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"/>
+                <filter string="Completed" name="completed" domain="[('state','=','completed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Specialty" name="group_specialty" context="{'group_by':'specialty_id'}"/>
+                    <filter string="Branch" name="group_company" context="{'group_by':'company_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_clinic_ehr_encounter" model="ir.actions.act_window">
+        <field name="name">Encounters</field>
+        <field name="res_model">clinic.ehr.encounter</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

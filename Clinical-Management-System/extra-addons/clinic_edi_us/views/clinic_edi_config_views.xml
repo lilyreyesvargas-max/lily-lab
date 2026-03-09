@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_edi_config_form" model="ir.ui.view">
+        <field name="name">clinic.edi.config.form</field>
+        <field name="model">clinic.edi.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="General">
+                            <field name="name"/>
+                            <field name="clearinghouse_name"/>
+                            <field name="company_id"/>
+                            <field name="transport_type"/>
+                            <field name="is_sandbox"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Identity">
+                            <field name="sender_id"/>
+                            <field name="receiver_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="REST API">
+                            <group>
+                                <field name="rest_url"/>
+                                <field name="rest_api_key" password="True"/>
+                            </group>
+                        </page>
+                        <page string="SFTP">
+                            <group>
+                                <field name="sftp_host"/>
+                                <field name="sftp_port"/>
+                                <field name="sftp_user"/>
+                                <field name="sftp_password" password="True"/>
+                                <field name="sftp_in_path"/>
+                                <field name="sftp_out_path"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_edi_config_list" model="ir.ui.view">
+        <field name="name">clinic.edi.config.list</field>
+        <field name="model">clinic.edi.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="clearinghouse_name"/>
+                <field name="transport_type"/>
+                <field name="is_sandbox"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_edi_config" model="ir.actions.act_window">
+        <field name="name">EDI Configuration</field>
+        <field name="res_model">clinic.edi.config</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_edi_eligibility_form" model="ir.ui.view">
+        <field name="name">clinic.edi.eligibility.request.form</field>
+        <field name="model">clinic.edi.eligibility.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_generate_270" string="Send 270 Request" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,received,processed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="insurer_id"/>
+                            <field name="request_date"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group string="Result">
+                            <field name="eligible"/>
+                            <field name="plan_name"/>
+                            <field name="transaction_270_id"/>
+                            <field name="transaction_271_id"/>
+                        </group>
+                    </group>
+                    <group string="Eligibility Notes">
+                        <field name="eligibility_notes" nolabel="1"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_edi_eligibility_list" model="ir.ui.view">
+        <field name="name">clinic.edi.eligibility.request.list</field>
+        <field name="model">clinic.edi.eligibility.request</field>
+        <field name="arch" type="xml">
+            <list decoration-success="eligible == True" decoration-danger="eligible == False and state == 'processed'">
+                <field name="patient_id"/>
+                <field name="insurer_id"/>
+                <field name="request_date"/>
+                <field name="eligible"/>
+                <field name="plan_name"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_edi_eligibility" model="ir.actions.act_window">
+        <field name="name">Eligibility Requests</field>
+        <field name="res_model">clinic.edi.eligibility.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

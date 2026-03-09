@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: clinic_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:17.0
+    container_name: clinic_odoo
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      HOST: db
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      - ./extra-addons:/mnt/extra-addons
+      - odoo-data:/var/lib/odoo
+      - ./edi:/edi
+    restart: unless-stopped
+
+  mock-clearinghouse:
+    build:
+      context: ./mock-clearinghouse
+      dockerfile: Dockerfile
+    container_name: clinic_mock_clearinghouse
+    ports:
+      - "18080:18080"
+    volumes:
+      - ./edi:/edi
+    environment:
+      TZ: ${TZ}
+      EDI_VERBOSE: ${EDI_VERBOSE:-1}
+    restart: unless-stopped
+
+  sftp-sandbox:
+    image: atmoz/sftp
+    container_name: clinic_sftp
+    ports:
+      - "2222:22"
+    volumes:
+      - ./edi:/home/ediuser/edi
+    command: ediuser:edipass:1001
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: clinic_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@clinic.local
+      PGADMIN_DEFAULT_PASSWORD: pgadmin_local
+      TZ: ${TZ}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
+  odoo-data:
+    driver: local

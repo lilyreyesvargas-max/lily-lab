@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_billing_root" name="Billing"
+              parent="clinic_core.menu_clinic_root" sequence="30"/>
+    <menuitem id="menu_clinic_claims" name="Claims" parent="menu_clinic_billing_root"
+              action="action_clinic_billing_claim" sequence="10"/>
+    <menuitem id="menu_clinic_remittances" name="Remittances" parent="menu_clinic_billing_root"
+              action="action_clinic_remittance" sequence="20"/>
+    <menuitem id="menu_clinic_coverage_rules" name="Coverage Rules" parent="menu_clinic_billing_root"
+              action="action_clinic_coverage_rule" sequence="30"/>
+</odoo>

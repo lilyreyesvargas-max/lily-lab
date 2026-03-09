@@ -1,0 +1,21 @@
+{
+    'name': 'Clinic EDI US',
+    'version': '17.0.1.0.0',
+    'summary': 'US Healthcare EDI: 837/835/270/271, X12 Validation, Clearinghouse Connectors',
+    'category': 'Health',
+    'author': 'Clinic Dev',
+    'license': 'LGPL-3',
+    'depends': ['clinic_insurance_billing'],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/clinic_edi_config_data.xml',
+        'data/clinic_edi_sequence.xml',
+        'views/clinic_edi_transaction_views.xml',
+        'views/clinic_edi_config_views.xml',
+        'views/clinic_edi_eligibility_views.xml',
+        'views/menu_views.xml',
+    ],
+    'demo': ['demo/clinic_edi_us_demo.xml'],
+    'installable': True,
+    'auto_install': False,
+}

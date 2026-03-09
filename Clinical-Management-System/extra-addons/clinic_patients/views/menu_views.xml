@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_patients_root" name="Patients"
+              parent="clinic_core.menu_clinic_root" sequence="10"/>
+    <menuitem id="menu_clinic_patient_list" name="Patients"
+              parent="menu_clinic_patients_root"
+              action="action_clinic_patient" sequence="10"/>
+    <menuitem id="menu_clinic_insurer_list" name="Insurers"
+              parent="menu_clinic_patients_root"
+              action="action_clinic_insurer" sequence="20"/>
+</odoo>

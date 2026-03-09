@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_coverage_rule_admin,clinic.coverage.rule admin,model_clinic_coverage_rule,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_coverage_rule_billing,clinic.coverage.rule billing,model_clinic_coverage_rule,clinic_core.clinic_group_billing,1,1,0,0
+access_clinic_coverage_rule_user,clinic.coverage.rule user,model_clinic_coverage_rule,base.group_user,1,0,0,0
+access_clinic_billing_claim_admin,clinic.billing.claim admin,model_clinic_billing_claim,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_billing_claim_billing,clinic.billing.claim billing,model_clinic_billing_claim,clinic_core.clinic_group_billing,1,1,1,0
+access_clinic_billing_claim_doctor,clinic.billing.claim doctor,model_clinic_billing_claim,clinic_core.clinic_group_doctor,1,0,0,0
+access_clinic_billing_claim_line_admin,clinic.billing.claim.line admin,model_clinic_billing_claim_line,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_billing_claim_line_billing,clinic.billing.claim.line billing,model_clinic_billing_claim_line,clinic_core.clinic_group_billing,1,1,1,1
+access_clinic_billing_claim_line_user,clinic.billing.claim.line user,model_clinic_billing_claim_line,base.group_user,1,0,0,0
+access_clinic_remittance_admin,clinic.remittance admin,model_clinic_remittance,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_remittance_billing,clinic.remittance billing,model_clinic_remittance,clinic_core.clinic_group_billing,1,1,1,0
+access_clinic_remittance_user,clinic.remittance user,model_clinic_remittance,base.group_user,1,0,0,0
+access_clinic_remittance_line_admin,clinic.remittance.line admin,model_clinic_remittance_line,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_remittance_line_user,clinic.remittance.line user,model_clinic_remittance_line,base.group_user,1,0,0,0

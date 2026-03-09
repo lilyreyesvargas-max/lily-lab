@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="encounter_john_mg" model="clinic.ehr.encounter">
+        <field name="patient_id" ref="clinic_patients.patient_john_doe"/>
+        <field name="specialty_id" ref="clinic_core.specialty_med_general"/>
+        <field name="chief_complaint">Routine checkup and hypertension follow-up</field>
+        <field name="assessment">Hypertension controlled with medication</field>
+        <field name="plan">Continue current medication, return in 3 months</field>
+        <field name="bp_systolic">130</field>
+        <field name="bp_diastolic">85</field>
+        <field name="heart_rate">72</field>
+        <field name="weight">82.5</field>
+        <field name="height">175.0</field>
+        <field name="state">completed</field>
+    </record>
+
+    <record id="encounter_mary_gine" model="clinic.ehr.encounter">
+        <field name="patient_id" ref="clinic_patients.patient_mary_smith"/>
+        <field name="specialty_id" ref="clinic_core.specialty_ginecologia"/>
+        <field name="chief_complaint">Prenatal visit - 12 weeks</field>
+        <field name="gravida">2</field>
+        <field name="para">1</field>
+        <field name="gynecological_notes">Normal fetal development at 12 weeks</field>
+        <field name="state">completed</field>
+    </record>
+
+    <record id="encounter_james_oft" model="clinic.ehr.encounter">
+        <field name="patient_id" ref="clinic_patients.patient_james_williams"/>
+        <field name="specialty_id" ref="clinic_core.specialty_oftalmologia"/>
+        <field name="chief_complaint">Blurry vision, difficulty reading</field>
+        <field name="od_sphere">-1.25</field>
+        <field name="od_va">20/40</field>
+        <field name="oi_sphere">-1.50</field>
+        <field name="oi_va">20/40</field>
+        <field name="ophthalmic_notes">Myopia bilaterally, prescribe corrective lenses</field>
+        <field name="state">completed</field>
+    </record>
+</odoo>

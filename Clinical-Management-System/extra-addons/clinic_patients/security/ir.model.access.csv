@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_insurer_admin,clinic.insurer admin,model_clinic_insurer,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_insurer_user,clinic.insurer user,model_clinic_insurer,base.group_user,1,0,0,0
+access_clinic_insurer_plan_admin,clinic.insurer.plan admin,model_clinic_insurer_plan,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_insurer_plan_user,clinic.insurer.plan user,model_clinic_insurer_plan,base.group_user,1,0,0,0
+access_clinic_patient_admin,clinic.patient admin,model_clinic_patient,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_patient_doctor,clinic.patient doctor,model_clinic_patient,clinic_core.clinic_group_doctor,1,1,1,0
+access_clinic_patient_nurse,clinic.patient nurse,model_clinic_patient,clinic_core.clinic_group_nurse,1,1,0,0
+access_clinic_patient_receptionist,clinic.patient receptionist,model_clinic_patient,clinic_core.clinic_group_receptionist,1,1,1,0
+access_clinic_patient_billing,clinic.patient billing,model_clinic_patient,clinic_core.clinic_group_billing,1,0,0,0
+access_clinic_patient_policy_admin,clinic.patient.policy admin,model_clinic_patient_policy,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_patient_policy_user,clinic.patient.policy user,model_clinic_patient_policy,base.group_user,1,0,0,0
+access_clinic_patient_consent_admin,clinic.patient.consent admin,model_clinic_patient_consent,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_patient_consent_user,clinic.patient.consent user,model_clinic_patient_consent,base.group_user,1,0,0,0

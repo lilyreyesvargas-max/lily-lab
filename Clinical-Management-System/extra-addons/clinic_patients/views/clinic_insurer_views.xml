@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_insurer_form" model="ir.ui.view">
+        <field name="name">clinic.insurer.form</field>
+        <field name="model">clinic.insurer</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="payer_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="phone"/>
+                            <field name="email"/>
+                            <field name="website"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Plans">
+                            <field name="plan_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                    <field name="plan_code"/>
+                                    <field name="coverage_type"/>
+                                    <field name="deductible"/>
+                                    <field name="copay"/>
+                                    <field name="coinsurance"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes"><field name="notes"/></page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_insurer_list" model="ir.ui.view">
+        <field name="name">clinic.insurer.list</field>
+        <field name="model">clinic.insurer</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="payer_id"/>
+                <field name="phone"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_insurer" model="ir.actions.act_window">
+        <field name="name">Insurers</field>
+        <field name="res_model">clinic.insurer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Coverage Rule -->
+    <record id="view_clinic_coverage_rule_form" model="ir.ui.view">
+        <field name="name">clinic.coverage.rule.form</field>
+        <field name="model">clinic.coverage.rule</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="insurer_id"/>
+                            <field name="plan_id"/>
+                            <field name="service_code"/>
+                        </group>
+                        <group>
+                            <field name="coverage_pct"/>
+                            <field name="patient_copay"/>
+                            <field name="patient_coinsurance_pct"/>
+                            <field name="requires_auth"/>
+                            <field name="auth_code" invisible="not requires_auth"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Notes"><field name="notes" nolabel="1"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_coverage_rule_list" model="ir.ui.view">
+        <field name="name">clinic.coverage.rule.list</field>
+        <field name="model">clinic.coverage.rule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="insurer_id"/>
+                <field name="plan_id"/>
+                <field name="service_code"/>
+                <field name="coverage_pct"/>
+                <field name="patient_copay"/>
+                <field name="requires_auth"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_coverage_rule" model="ir.actions.act_window">
+        <field name="name">Coverage Rules</field>
+        <field name="res_model">clinic.coverage.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Billing Claim -->
+    <record id="view_clinic_billing_claim_form" model="ir.ui.view">
+        <field name="name">clinic.billing.claim.form</field>
+        <field name="model">clinic.billing.claim</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_submit" string="Submit" type="object"
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_mark_paid" string="Mark Paid" type="object"
+                            invisible="state not in ['submitted','partial']"/>
+                    <button name="action_mark_partial" string="Partial Payment" type="object"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_deny" string="Deny" type="object"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_void" string="Void" type="object"
+                            invisible="state in ['voided']"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object"
+                            invisible="state not in ['denied','voided']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="policy_id"/>
+                            <field name="service_date"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="total_amount" readonly="1"/>
+                            <field name="insurer_amount" readonly="1"/>
+                            <field name="patient_amount" readonly="1"/>
+                            <field name="encounter_ref"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="service_code"/>
+                            <field name="description"/>
+                            <field name="quantity"/>
+                            <field name="unit_price"/>
+                            <field name="subtotal" readonly="1"/>
+                            <field name="coverage_pct"/>
+                            <field name="insurer_amount" readonly="1"/>
+                            <field name="patient_amount" readonly="1"/>
+                            <field name="icd10_id"/>
+                        </list>
+                    </field>
+                    <group string="Notes"><field name="notes" nolabel="1"/></group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_billing_claim_list" model="ir.ui.view">
+        <field name="name">clinic.billing.claim.list</field>
+        <field name="model">clinic.billing.claim</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'denied'" decoration-success="state == 'paid'">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="service_date"/>
+                <field name="total_amount"/>
+                <field name="insurer_amount"/>
+                <field name="patient_amount"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_billing_claim" model="ir.actions.act_window">
+        <field name="name">Claims</field>
+        <field name="res_model">clinic.billing.claim</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Remittance -->
+    <record id="view_clinic_remittance_form" model="ir.ui.view">
+        <field name="name">clinic.remittance.form</field>
+        <field name="model">clinic.remittance</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="insurer_id"/>
+                            <field name="payment_date"/>
+                        </group>
+                        <group>
+                            <field name="check_eft_number"/>
+                            <field name="total_paid"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom">
+                            <field name="claim_id"/>
+                            <field name="claim_ref"/>
+                            <field name="patient_name"/>
+                            <field name="billed_amount"/>
+                            <field name="paid_amount"/>
+                            <field name="adjustment_reason"/>
+                            <field name="status"/>
+                        </list>
+                    </field>
+                    <group string="Notes"><field name="notes" nolabel="1"/></group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_remittance_list" model="ir.ui.view">
+        <field name="name">clinic.remittance.list</field>
+        <field name="model">clinic.remittance</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="insurer_id"/>
+                <field name="payment_date"/>
+                <field name="check_eft_number"/>
+                <field name="total_paid"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_clinic_remittance" model="ir.actions.act_window">
+        <field name="name">Remittances</field>
+        <field name="res_model">clinic.remittance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

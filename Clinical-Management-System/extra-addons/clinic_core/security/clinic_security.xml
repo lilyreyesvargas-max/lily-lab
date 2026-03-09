@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Module Category -->
+    <record id="module_category_clinic" model="ir.module.category">
+        <field name="name">Clinic</field>
+        <field name="description">Clinical Management System</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- Security Groups -->
+    <record id="clinic_group_admin" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="module_category_clinic"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="clinic_group_doctor" model="res.groups">
+        <field name="name">Doctor</field>
+        <field name="category_id" ref="module_category_clinic"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="clinic_group_nurse" model="res.groups">
+        <field name="name">Nurse</field>
+        <field name="category_id" ref="module_category_clinic"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="clinic_group_receptionist" model="res.groups">
+        <field name="name">Receptionist</field>
+        <field name="category_id" ref="module_category_clinic"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <record id="clinic_group_billing" model="res.groups">
+        <field name="name">Billing</field>
+        <field name="category_id" ref="module_category_clinic"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_clinic_ehr_encounter" model="ir.sequence">
+        <field name="name">Encounter Reference</field>
+        <field name="code">clinic.ehr.encounter</field>
+        <field name="prefix">ENCTR/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

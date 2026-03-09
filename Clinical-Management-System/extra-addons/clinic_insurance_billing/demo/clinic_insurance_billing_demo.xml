@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="claim_john_paid" model="clinic.billing.claim">
+        <field name="patient_id" ref="clinic_patients.patient_john_doe"/>
+        <field name="policy_id" ref="clinic_patients.policy_john_bcbs"/>
+        <field name="service_date">2024-01-15</field>
+        <field name="state">paid</field>
+        <field name="notes">Routine visit - fully paid</field>
+    </record>
+
+    <record id="claim_line_john_1" model="clinic.billing.claim.line">
+        <field name="claim_id" ref="claim_john_paid"/>
+        <field name="service_code">99213</field>
+        <field name="description">Office Visit Level 3</field>
+        <field name="quantity">1</field>
+        <field name="unit_price">150.00</field>
+        <field name="coverage_pct">80</field>
+    </record>
+
+    <record id="claim_mary_partial" model="clinic.billing.claim">
+        <field name="patient_id" ref="clinic_patients.patient_mary_smith"/>
+        <field name="policy_id" ref="clinic_patients.policy_mary_uhc"/>
+        <field name="service_date">2024-01-20</field>
+        <field name="state">partial</field>
+        <field name="notes">Partial payment received</field>
+    </record>
+
+    <record id="claim_line_mary_1" model="clinic.billing.claim.line">
+        <field name="claim_id" ref="claim_mary_partial"/>
+        <field name="service_code">99214</field>
+        <field name="description">Office Visit Level 4</field>
+        <field name="quantity">1</field>
+        <field name="unit_price">200.00</field>
+        <field name="coverage_pct">70</field>
+    </record>
+
+    <record id="remittance_bcbs_jan" model="clinic.remittance">
+        <field name="name">ERA-BCBS-20240101</field>
+        <field name="insurer_id" ref="clinic_patients.insurer_bcbs"/>
+        <field name="payment_date">2024-01-25</field>
+        <field name="check_eft_number">EFT-12345</field>
+        <field name="total_paid">120.00</field>
+        <field name="state">processed</field>
+    </record>
+</odoo>

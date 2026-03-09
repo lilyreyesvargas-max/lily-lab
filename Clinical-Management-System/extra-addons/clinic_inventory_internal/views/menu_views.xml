@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_inventory_root" name="Inventory"
+              parent="clinic_core.menu_clinic_root" sequence="40"/>
+    <menuitem id="menu_clinic_supply_requests" name="Supply Requests"
+              parent="menu_clinic_inventory_root"
+              action="action_clinic_supply_request" sequence="10"/>
+</odoo>

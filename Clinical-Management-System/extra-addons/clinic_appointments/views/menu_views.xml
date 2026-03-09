@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_appointments_root" name="Appointments"
+              parent="clinic_core.menu_clinic_root" sequence="15"/>
+    <menuitem id="menu_clinic_appointment_list" name="Appointments"
+              parent="menu_clinic_appointments_root"
+              action="action_clinic_appointment" sequence="10"/>
+</odoo>

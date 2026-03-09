@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_automation_log_admin,clinic.automation.log admin,model_clinic_automation_log,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_automation_log_user,clinic.automation.log user,model_clinic_automation_log,base.group_user,1,0,0,0
+access_clinic_automation_config_admin,clinic.automation.config admin,model_clinic_automation_config,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_automation_config_user,clinic.automation.config user,model_clinic_automation_config,base.group_user,1,0,0,0

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_ehr_root" name="EHR" parent="clinic_core.menu_clinic_root" sequence="20"/>
+    <menuitem id="menu_clinic_encounters" name="Encounters" parent="menu_clinic_ehr_root"
+              action="action_clinic_ehr_encounter" sequence="10"/>
+</odoo>

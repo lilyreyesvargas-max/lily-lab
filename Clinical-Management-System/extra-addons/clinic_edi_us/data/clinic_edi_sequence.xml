@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_clinic_edi_transaction" model="ir.sequence">
+        <field name="name">EDI Transaction</field>
+        <field name="code">clinic.edi.transaction</field>
+        <field name="prefix">EDI/%(year)s/</field>
+        <field name="padding">6</field>
+    </record>
+</odoo>

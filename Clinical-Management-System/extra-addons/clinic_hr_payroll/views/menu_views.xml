@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_hr_root" name="HR" parent="clinic_core.menu_clinic_root" sequence="45"/>
+    <menuitem id="menu_clinic_employees" name="Clinical Staff" parent="menu_clinic_hr_root"
+              action="action_clinic_employees" sequence="10"/>
+    <menuitem id="menu_clinic_shifts" name="Shifts" parent="menu_clinic_hr_root"
+              action="action_clinic_shift" sequence="20"/>
+</odoo>

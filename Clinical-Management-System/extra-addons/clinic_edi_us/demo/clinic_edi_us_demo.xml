@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edi_tx_837_draft" model="clinic.edi.transaction">
+        <field name="transaction_type">837</field>
+        <field name="direction">outbound</field>
+        <field name="state">draft</field>
+        <field name="content">ISA*00*          *00*          *ZZ*SENDCLINIC     *ZZ*CLRHOUSE       *240101*1200*^*00501*000000001*0*T*:~
+GS*HC*SENDCLINIC*CLRHOUSE*20240101*1200*1*X*005010X222A1~
+ST*837*0001*005010X222A1~
+CLM*DEMO001*250.00***11:B:1*Y*A*Y*I~
+SE*4*0001~
+GE*1*1~
+IEA*1*000000001~</field>
+        <field name="notes">Demo draft 837P claim</field>
+    </record>
+
+    <record id="edi_tx_835_received" model="clinic.edi.transaction">
+        <field name="transaction_type">835</field>
+        <field name="direction">inbound</field>
+        <field name="state">received</field>
+        <field name="control_number">000000003</field>
+        <field name="notes">Demo inbound 835 ERA - full payment</field>
+    </record>
+
+    <record id="edi_tx_270_sent" model="clinic.edi.transaction">
+        <field name="transaction_type">270</field>
+        <field name="direction">outbound</field>
+        <field name="state">sent</field>
+        <field name="control_number">000000004</field>
+        <field name="notes">Demo 270 eligibility request sent</field>
+    </record>
+</odoo>

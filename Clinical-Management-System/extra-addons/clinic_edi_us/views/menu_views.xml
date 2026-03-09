@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_edi_root" name="EDI US" parent="clinic_core.menu_clinic_root" sequence="60"/>
+    <menuitem id="menu_clinic_edi_transactions" name="Transactions" parent="menu_clinic_edi_root"
+              action="action_clinic_edi_transaction" sequence="10"/>
+    <menuitem id="menu_clinic_edi_eligibility" name="Eligibility Requests" parent="menu_clinic_edi_root"
+              action="action_clinic_edi_eligibility" sequence="20"/>
+    <menuitem id="menu_clinic_edi_config" name="EDI Configuration" parent="menu_clinic_edi_root"
+              action="action_clinic_edi_config" sequence="30"/>
+</odoo>

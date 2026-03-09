@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_edi_transaction_form" model="ir.ui.view">
+        <field name="name">clinic.edi.transaction.form</field>
+        <field name="model">clinic.edi.transaction</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_validate" string="Validate" type="object"
+                            class="oe_highlight" invisible="state not in ['draft','error']"/>
+                    <button name="action_send_rest" string="Send REST" type="object"
+                            class="oe_highlight" invisible="state != 'validated'"/>
+                    <button name="action_send_sftp" string="Send SFTP" type="object"
+                            invisible="state != 'validated'"/>
+                    <button name="action_process_inbound" string="Process" type="object"
+                            invisible="state not in ['received']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,validated,sent,processed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="ref" readonly="1"/>
+                            <field name="transaction_type"/>
+                            <field name="direction"/>
+                            <field name="transaction_date"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="edi_config_id"/>
+                            <field name="control_number"/>
+                            <field name="sender_id"/>
+                            <field name="receiver_id"/>
+                            <field name="claim_id"/>
+                            <field name="remittance_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="X12 Content">
+                            <field name="content" widget="text" placeholder="Paste X12 content here..."/>
+                        </page>
+                        <page string="Response">
+                            <field name="response_content" widget="text" readonly="1"/>
+                        </page>
+                        <page string="Validation Errors" invisible="not validation_errors">
+                            <field name="validation_errors" widget="text" readonly="1"/>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_edi_transaction_list" model="ir.ui.view">
+        <field name="name">clinic.edi.transaction.list</field>
+        <field name="model">clinic.edi.transaction</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-success="state == 'processed'">
+                <field name="ref"/>
+                <field name="transaction_type"/>
+                <field name="direction"/>
+                <field name="transaction_date"/>
+                <field name="company_id"/>
+                <field name="control_number"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_clinic_edi_transaction_search" model="ir.ui.view">
+        <field name="name">clinic.edi.transaction.search</field>
+        <field name="model">clinic.edi.transaction</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="ref"/>
+                <field name="transaction_type"/>
+                <filter string="Outbound" name="outbound" domain="[('direction','=','outbound')]"/>
+                <filter string="Inbound" name="inbound" domain="[('direction','=','inbound')]"/>
+                <filter string="Errors" name="errors" domain="[('state','=','error')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Type" name="group_type" context="{'group_by':'transaction_type'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_clinic_edi_transaction" model="ir.actions.act_window">
+        <field name="name">EDI Transactions</field>
+        <field name="res_model">clinic.edi.transaction</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

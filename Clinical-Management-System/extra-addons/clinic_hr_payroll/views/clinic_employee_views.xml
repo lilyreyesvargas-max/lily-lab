@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend hr.employee form to add Clinic Info tab -->
+    <record id="view_clinic_employee_form_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.clinic</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Clinic Info">
+                    <group>
+                        <group>
+                            <field name="clinic_role"/>
+                            <field name="is_physician" readonly="1"/>
+                            <field name="specialty_id"/>
+                        </group>
+                        <group>
+                            <field name="license_number"/>
+                            <field name="license_expiry"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <!-- Employees filtered by clinic role -->
+    <record id="action_clinic_employees" model="ir.actions.act_window">
+        <field name="name">Clinical Staff</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('clinic_role','!=',False)]</field>
+    </record>
+</odoo>

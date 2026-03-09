@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="icd10_z0000" model="clinic.icd10"><field name="code">Z00.00</field><field name="description">Encounter for general adult medical examination without abnormal findings</field><field name="category">Preventive</field></record>
+    <record id="icd10_z0100" model="clinic.icd10"><field name="code">Z01.00</field><field name="description">Encounter for examination of eyes and vision without abnormal findings</field><field name="category">Preventive</field></record>
+    <record id="icd10_j00" model="clinic.icd10"><field name="code">J00</field><field name="description">Acute nasopharyngitis (common cold)</field><field name="category">Respiratory</field></record>
+    <record id="icd10_j069" model="clinic.icd10"><field name="code">J06.9</field><field name="description">Acute upper respiratory infection, unspecified</field><field name="category">Respiratory</field></record>
+    <record id="icd10_k210" model="clinic.icd10"><field name="code">K21.0</field><field name="description">Gastro-esophageal reflux disease with esophagitis</field><field name="category">Digestive</field></record>
+    <record id="icd10_e119" model="clinic.icd10"><field name="code">E11.9</field><field name="description">Type 2 diabetes mellitus without complications</field><field name="category">Endocrine</field></record>
+    <record id="icd10_i10" model="clinic.icd10"><field name="code">I10</field><field name="description">Essential (primary) hypertension</field><field name="category">Cardiovascular</field></record>
+    <record id="icd10_m545" model="clinic.icd10"><field name="code">M54.5</field><field name="description">Low back pain</field><field name="category">Musculoskeletal</field></record>
+    <record id="icd10_f329" model="clinic.icd10"><field name="code">F32.9</field><field name="description">Major depressive disorder, single episode, unspecified</field><field name="category">Mental Health</field></record>
+    <record id="icd10_j45909" model="clinic.icd10"><field name="code">J45.909</field><field name="description">Unspecified asthma, uncomplicated</field><field name="category">Respiratory</field></record>
+    <record id="icd10_a09" model="clinic.icd10"><field name="code">A09</field><field name="description">Other and unspecified gastroenteritis and colitis of infectious and unspecified origin</field><field name="category">Infectious</field></record>
+    <record id="icd10_z23" model="clinic.icd10"><field name="code">Z23</field><field name="description">Encounter for immunization</field><field name="category">Preventive</field></record>
+    <record id="icd10_z3400" model="clinic.icd10"><field name="code">Z34.00</field><field name="description">Encounter for supervision of normal first pregnancy, unspecified trimester</field><field name="category">Obstetric</field></record>
+    <record id="icd10_o80" model="clinic.icd10"><field name="code">O80</field><field name="description">Encounter for full-term uncomplicated delivery</field><field name="category">Obstetric</field></record>
+    <record id="icd10_h524" model="clinic.icd10"><field name="code">H52.4</field><field name="description">Presbyopia</field><field name="category">Ophthalmology</field></record>
+    <record id="icd10_h10" model="clinic.icd10"><field name="code">H10.9</field><field name="description">Unspecified conjunctivitis</field><field name="category">Ophthalmology</field></record>
+    <record id="icd10_k297" model="clinic.icd10"><field name="code">K29.70</field><field name="description">Gastritis, unspecified, without bleeding</field><field name="category">Digestive</field></record>
+    <record id="icd10_k021" model="clinic.icd10"><field name="code">K02.1</field><field name="description">Dental caries on root surface</field><field name="category">Dental</field></record>
+    <record id="icd10_k054" model="clinic.icd10"><field name="code">K05.4</field><field name="description">Periodontitis</field><field name="category">Dental</field></record>
+    <record id="icd10_z713" model="clinic.icd10"><field name="code">Z71.3</field><field name="description">Dietary counseling and surveillance</field><field name="category">Preventive</field></record>
+</odoo>

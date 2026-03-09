@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Demo specialties are loaded by data (noupdate=1), nothing extra needed -->
+    <!-- Demo ICD-10 sample records -->
+    <record id="demo_icd10_j22" model="clinic.icd10">
+        <field name="code">J22</field>
+        <field name="description">Unspecified acute lower respiratory infection</field>
+        <field name="category">Respiratory</field>
+    </record>
+</odoo>

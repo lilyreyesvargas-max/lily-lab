@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Demo Shifts -->
+    <record id="shift_morning" model="clinic.shift">
+        <field name="name">Morning Shift</field>
+        <field name="hour_from">7.0</field>
+        <field name="hour_to">15.0</field>
+        <field name="day_ids" eval="[(6, 0, [ref('day_monday'), ref('day_tuesday'), ref('day_wednesday'), ref('day_thursday'), ref('day_friday')])]"/>
+    </record>
+
+    <record id="shift_afternoon" model="clinic.shift">
+        <field name="name">Afternoon Shift</field>
+        <field name="hour_from">15.0</field>
+        <field name="hour_to">23.0</field>
+        <field name="day_ids" eval="[(6, 0, [ref('day_monday'), ref('day_tuesday'), ref('day_wednesday'), ref('day_thursday'), ref('day_friday')])]"/>
+    </record>
+
+    <record id="shift_weekend" model="clinic.shift">
+        <field name="name">Weekend Shift</field>
+        <field name="hour_from">8.0</field>
+        <field name="hour_to">16.0</field>
+        <field name="day_ids" eval="[(6, 0, [ref('day_saturday'), ref('day_sunday')])]"/>
+    </record>
+</odoo>

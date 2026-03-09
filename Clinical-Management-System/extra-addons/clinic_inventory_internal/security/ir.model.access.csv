@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_supply_request_admin,clinic.supply.request admin,model_clinic_supply_request,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_supply_request_nurse,clinic.supply.request nurse,model_clinic_supply_request,clinic_core.clinic_group_nurse,1,1,1,0
+access_clinic_supply_request_doctor,clinic.supply.request doctor,model_clinic_supply_request,clinic_core.clinic_group_doctor,1,1,1,0
+access_clinic_supply_request_user,clinic.supply.request user,model_clinic_supply_request,base.group_user,1,0,0,0
+access_clinic_supply_request_line_admin,clinic.supply.request.line admin,model_clinic_supply_request_line,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_supply_request_line_user,clinic.supply.request.line user,model_clinic_supply_request_line,base.group_user,1,0,0,0

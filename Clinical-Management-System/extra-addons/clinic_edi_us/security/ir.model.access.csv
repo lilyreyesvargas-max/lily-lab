@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_edi_config_admin,clinic.edi.config admin,model_clinic_edi_config,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_edi_config_billing,clinic.edi.config billing,model_clinic_edi_config,clinic_core.clinic_group_billing,1,0,0,0
+access_clinic_edi_transaction_admin,clinic.edi.transaction admin,model_clinic_edi_transaction,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_edi_transaction_billing,clinic.edi.transaction billing,model_clinic_edi_transaction,clinic_core.clinic_group_billing,1,1,1,0
+access_clinic_edi_transaction_user,clinic.edi.transaction user,model_clinic_edi_transaction,base.group_user,1,0,0,0
+access_clinic_edi_eligibility_admin,clinic.edi.eligibility.request admin,model_clinic_edi_eligibility_request,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_edi_eligibility_billing,clinic.edi.eligibility.request billing,model_clinic_edi_eligibility_request,clinic_core.clinic_group_billing,1,1,1,0
+access_clinic_edi_eligibility_user,clinic.edi.eligibility.request user,model_clinic_edi_eligibility_request,base.group_user,1,0,0,0

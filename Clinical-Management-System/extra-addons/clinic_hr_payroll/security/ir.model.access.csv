@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_shift_day_admin,clinic.shift.day admin,model_clinic_shift_day,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_shift_day_user,clinic.shift.day user,model_clinic_shift_day,base.group_user,1,0,0,0
+access_clinic_shift_admin,clinic.shift admin,model_clinic_shift,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_shift_user,clinic.shift user,model_clinic_shift,base.group_user,1,0,0,0

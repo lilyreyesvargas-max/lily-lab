@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_clinic_automation_root" name="Automation"
+              parent="clinic_core.menu_clinic_root" sequence="90"/>
+    <menuitem id="menu_clinic_automation_config" name="Configuration"
+              parent="menu_clinic_automation_root"
+              action="action_clinic_automation_config" sequence="10"/>
+    <menuitem id="menu_clinic_automation_log" name="Logs"
+              parent="menu_clinic_automation_root"
+              action="action_clinic_automation_log" sequence="20"/>
+</odoo>

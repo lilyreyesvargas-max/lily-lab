@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="cron_appointment_reminders" model="ir.cron">
+        <field name="name">Clinic: Send Appointment Reminders</field>
+        <field name="model_id" ref="model_clinic_automation_config"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_send_appointment_reminders()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <record id="cron_stock_alerts" model="ir.cron">
+        <field name="name">Clinic: Check Stock Alerts</field>
+        <field name="model_id" ref="model_clinic_automation_config"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_check_stock_alerts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">10</field>
+    </record>
+
+    <record id="cron_expiry_alerts" model="ir.cron">
+        <field name="name">Clinic: Check Expiry Alerts</field>
+        <field name="model_id" ref="model_clinic_automation_config"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_check_expiry_alerts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">10</field>
+    </record>
+
+    <record id="cron_edi_jobs" model="ir.cron">
+        <field name="name">Clinic: Run EDI Jobs</field>
+        <field name="model_id" ref="model_clinic_automation_config"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_run_edi_jobs()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">False</field>
+        <field name="priority">20</field>
+    </record>
+</odoo>

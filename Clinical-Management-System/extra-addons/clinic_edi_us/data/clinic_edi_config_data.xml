@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="edi_config_mock_sandbox" model="clinic.edi.config">
+        <field name="name">Mock Clearinghouse (Sandbox)</field>
+        <field name="clearinghouse_name">Local Mock Clearinghouse</field>
+        <field name="transport_type">rest</field>
+        <field name="rest_url">http://mock-clearinghouse:18080</field>
+        <field name="sender_id">SENDCLINIC</field>
+        <field name="receiver_id">CLRHOUSE</field>
+        <field name="is_sandbox">True</field>
+        <field name="active">True</field>
+    </record>
+    <record id="edi_config_sftp_sandbox" model="clinic.edi.config">
+        <field name="name">SFTP Sandbox</field>
+        <field name="clearinghouse_name">Local SFTP Sandbox</field>
+        <field name="transport_type">sftp</field>
+        <field name="sftp_host">sftp-sandbox</field>
+        <field name="sftp_port">22</field>
+        <field name="sftp_user">ediuser</field>
+        <field name="sftp_password">edipass</field>
+        <field name="sftp_in_path">/home/ediuser/edi/in</field>
+        <field name="sftp_out_path">/home/ediuser/edi/out</field>
+        <field name="sender_id">SENDCLINIC</field>
+        <field name="receiver_id">CLRHOUSE</field>
+        <field name="is_sandbox">True</field>
+        <field name="active">False</field>
+    </record>
+</odoo>

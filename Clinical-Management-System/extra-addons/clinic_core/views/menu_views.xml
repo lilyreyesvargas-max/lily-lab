@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Root Menu -->
+    <menuitem id="menu_clinic_root" name="Clinic" sequence="50" web_icon="clinic_core,static/description/icon.png"/>
+
+    <!-- Configuration Menu -->
+    <menuitem id="menu_clinic_config" name="Configuration" parent="menu_clinic_root" sequence="100"/>
+    <menuitem id="menu_clinic_specialties" name="Specialties" parent="menu_clinic_config"
+              action="action_clinic_specialty" sequence="10"/>
+    <menuitem id="menu_clinic_icd10" name="ICD-10 Codes" parent="menu_clinic_config"
+              action="action_clinic_icd10" sequence="20"/>
+    <menuitem id="menu_clinic_config_settings" name="Clinic Settings" parent="menu_clinic_config"
+              action="action_clinic_config" sequence="30"/>
+</odoo>

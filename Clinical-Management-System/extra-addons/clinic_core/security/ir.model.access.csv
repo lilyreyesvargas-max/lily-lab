@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_specialty_admin,clinic.specialty admin,model_clinic_specialty,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_specialty_user,clinic.specialty user,model_clinic_specialty,base.group_user,1,0,0,0
+access_clinic_icd10_admin,clinic.icd10 admin,model_clinic_icd10,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_icd10_user,clinic.icd10 user,model_clinic_icd10,base.group_user,1,0,0,0
+access_clinic_config_admin,clinic.config admin,model_clinic_config,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_config_user,clinic.config user,model_clinic_config,base.group_user,1,0,0,0

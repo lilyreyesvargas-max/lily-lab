@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_clinic_ehr_encounter_admin,clinic.ehr.encounter admin,model_clinic_ehr_encounter,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_ehr_encounter_doctor,clinic.ehr.encounter doctor,model_clinic_ehr_encounter,clinic_core.clinic_group_doctor,1,1,1,0
+access_clinic_ehr_encounter_nurse,clinic.ehr.encounter nurse,model_clinic_ehr_encounter,clinic_core.clinic_group_nurse,1,1,0,0
+access_clinic_ehr_encounter_receptionist,clinic.ehr.encounter receptionist,model_clinic_ehr_encounter,clinic_core.clinic_group_receptionist,1,0,0,0
+access_clinic_ehr_encounter_billing,clinic.ehr.encounter billing,model_clinic_ehr_encounter,clinic_core.clinic_group_billing,1,0,0,0
+access_clinic_ehr_diagnosis_admin,clinic.ehr.diagnosis admin,model_clinic_ehr_diagnosis,clinic_core.clinic_group_admin,1,1,1,1
+access_clinic_ehr_diagnosis_doctor,clinic.ehr.diagnosis doctor,model_clinic_ehr_diagnosis,clinic_core.clinic_group_doctor,1,1,1,0
+access_clinic_ehr_diagnosis_nurse,clinic.ehr.diagnosis nurse,model_clinic_ehr_diagnosis,clinic_core.clinic_group_nurse,1,1,0,0
+access_clinic_ehr_diagnosis_user,clinic.ehr.diagnosis user,model_clinic_ehr_diagnosis,base.group_user,1,0,0,0

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_clinic_appointment_form" model="ir.ui.view">
+        <field name="name">clinic.appointment.form</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object"
+                            class="oe_highlight" invisible="state != 'scheduled'"/>
+                    <button name="action_arrived" string="Arrived" type="object"
+                            class="oe_highlight" invisible="state != 'confirmed'"/>
+                    <button name="action_start" string="Start Consultation" type="object"
+                            class="oe_highlight" invisible="state != 'arrived'"/>
+                    <button name="action_complete" string="Complete" type="object"
+                            class="oe_highlight" invisible="state != 'in_consultation'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state in ['completed','cancelled','no_show']"/>
+                    <button name="action_no_show" string="No Show" type="object"
+                            invisible="state not in ['scheduled','confirmed']"/>
+                    <button name="action_reset_scheduled" string="Reschedule" type="object"
+                            invisible="state not in ['cancelled','no_show']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="scheduled,confirmed,arrived,in_consultation,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="physician_id"/>
+                            <field name="specialty_id"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="appointment_date"/>
+                            <field name="duration"/>
+                            <field name="date_end" readonly="1"/>
+                            <field name="policy_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Reason for Visit">
+                            <field name="reason" nolabel="1"/>
+                        </page>
+                        <page string="Internal Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_clinic_appointment_list" model="ir.ui.view">
+        <field name="name">clinic.appointment.list</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state in ['cancelled','no_show']"
+                  decoration-success="state == 'completed'">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <field name="appointment_date"/>
+                <field name="duration"/>
+                <field name="specialty_id"/>
+                <field name="company_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_clinic_appointment_calendar" model="ir.ui.view">
+        <field name="name">clinic.appointment.calendar</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <calendar string="Appointments" date_start="appointment_date"
+                      date_stop="date_end" color="color" mode="month">
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_clinic_appointment_kanban" model="ir.ui.view">
+        <field name="name">clinic.appointment.kanban</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <field name="appointment_date"/>
+                <field name="state"/>
+                <field name="color"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <strong><field name="patient_id"/></strong>
+                                <div><field name="physician_id"/></div>
+                                <div><field name="appointment_date"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_clinic_appointment_search" model="ir.ui.view">
+        <field name="name">clinic.appointment.search</field>
+        <field name="model">clinic.appointment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="patient_id"/>
+                <field name="physician_id"/>
+                <filter string="Today" name="today"
+                        domain="[('appointment_date','>=',datetime.datetime.now().strftime('%Y-%m-%d 00:00:00')),('appointment_date','&lt;=',datetime.datetime.now().strftime('%Y-%m-%d 23:59:59'))]"/>
+                <filter string="Scheduled" name="scheduled" domain="[('state','=','scheduled')]"/>
+                <filter string="Confirmed" name="confirmed" domain="[('state','=','confirmed')]"/>
+                <filter string="Completed" name="completed" domain="[('state','=','completed')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Physician" name="group_physician" context="{'group_by':'physician_id'}"/>
+                    <filter string="Branch" name="group_company" context="{'group_by':'company_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_clinic_appointment" model="ir.actions.act_window">
+        <field name="name">Appointments</field>
+        <field name="res_model">clinic.appointment</field>
+        <field name="view_mode">list,form,calendar,kanban</field>
+    </record>
+</odoo>
