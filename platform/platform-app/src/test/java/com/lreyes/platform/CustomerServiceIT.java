@@ -7,13 +7,13 @@ import com.lreyes.platform.modules.customers.dto.CustomerResponse;
 import com.lreyes.platform.modules.customers.dto.UpdateCustomerRequest;
 import com.lreyes.platform.shared.domain.EntityNotFoundException;
 import com.lreyes.platform.shared.dto.PageResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.transaction.AfterTransaction;
+import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,13 +29,13 @@ class CustomerServiceIT {
     @Autowired
     private CustomerServicePort customerService;
 
-    @BeforeEach
-    void setup() {
-        TenantContext.setCurrentTenant("TEST");
+    @BeforeTransaction
+    void beforeTransaction() {
+        TenantContext.setCurrentTenant("test");
     }
 
-    @AfterEach
-    void cleanup() {
+    @AfterTransaction
+    void afterTransaction() {
         TenantContext.clear();
     }
 

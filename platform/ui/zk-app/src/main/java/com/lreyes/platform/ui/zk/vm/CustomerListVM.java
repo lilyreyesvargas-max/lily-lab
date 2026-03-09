@@ -38,7 +38,7 @@ public class CustomerListVM {
 
     @Init
     public void init() {
-        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN, RoleConstants.GESTOR);
+        user = ZkSecurityHelper.requireAuthenticated();
         customerService = SpringUtil.getApplicationContext().getBean(CustomerServicePort.class);
         loadData();
     }

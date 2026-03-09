@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,7 +68,7 @@ public class TenantSchemaJdbcRepository {
         jdbc.update(con -> {
             PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO tenant_schemas (tenant_id, schema_name, schema_type, active) VALUES (?, ?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS);
+                    new String[]{"id"});
             ps.setInt(1, schema.getTenantId());
             ps.setString(2, schema.getSchemaName());
             ps.setString(3, schema.getSchemaType());

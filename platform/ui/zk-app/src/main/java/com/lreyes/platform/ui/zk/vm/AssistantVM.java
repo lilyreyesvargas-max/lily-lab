@@ -21,10 +21,14 @@ import com.lreyes.platform.modules.customers.CustomerServicePort;
 import com.lreyes.platform.modules.customers.dto.CreateCustomerRequest;
 import com.lreyes.platform.modules.employees.EmployeeServicePort;
 import com.lreyes.platform.modules.employees.dto.CreateEmployeeRequest;
+import com.lreyes.platform.modules.employees.dto.UpdateEmployeeRequest;
+import org.springframework.data.domain.Pageable;
 import com.lreyes.platform.ui.zk.model.AssistantMessage;
 import com.lreyes.platform.ui.zk.model.UiUser;
+import com.lreyes.platform.ui.zk.navigation.DesktopNavigationQueue;
+import com.lreyes.platform.ui.zk.navigation.NavigationEvent;
+import com.lreyes.platform.ui.zk.navigation.NavigationQueue;
 import com.lreyes.platform.ui.zk.service.AssistantEngine;
-import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.bind.annotation.Init;
 import org.zkoss.bind.annotation.NotifyChange;
@@ -47,6 +51,14 @@ public class AssistantVM {
     private final AssistantEngine engine = new AssistantEngine();
     private List<AssistantMessage> messages = new ArrayList<>();
     private String userInput;
+
+    /**
+     * Navigation channel shared with {@link LayoutVM}.
+     * Both VMs use the same {@link DesktopNavigationQueue} backed by the same
+     * named ZK Desktop-scoped EventQueue, so events published here are received
+     * by the {@link LayoutVM} subscriber regardless of binder scope boundaries.
+     */
+    private NavigationQueue navigationQueue = new DesktopNavigationQueue();
 
     // Servicios (lazy)
     private CustomerServicePort customerService;
@@ -161,6 +173,7 @@ public class AssistantVM {
         TenantContext.setCurrentTenant(user.getTenantId());
 
         switch (entityCode) {
+            case "EMPLOYEE": return searchEmployees(term);
             case "ROLE": return searchRoles(term);
             case "USER": return searchUsers(term);
             case "CATALOG": return searchCatalogs(term);
@@ -296,6 +309,24 @@ public class AssistantVM {
                 .orElse(new LinkedHashSet<>());
     }
 
+    private List<Map<String, String>> searchEmployees(String term) {
+        TenantContext.setCurrentTenant(user.getTenantId());
+        return getEmployeeService().findAll(term.isBlank() ? null : term, Pageable.unpaged())
+                .content().stream()
+                .map(e -> {
+                    Map<String, String> m = new LinkedHashMap<>();
+                    m.put("_id", e.id().toString());
+                    m.put("_display", e.firstName() + " " + e.lastName() + " (" + e.email() + ")");
+                    m.put("firstName", e.firstName());
+                    m.put("lastName", e.lastName());
+                    m.put("email", e.email());
+                    m.put("position", e.position() != null ? e.position() : "");
+                    m.put("department", e.department() != null ? e.department() : "");
+                    m.put("active", String.valueOf(e.active()));
+                    return m;
+                }).collect(Collectors.toList());
+    }
+
     // ══════════════════════════════════════════════════════════════
     // ── Dispatcher de ejecución ──
     // ══════════════════════════════════════════════════════════════
@@ -305,6 +336,8 @@ public class AssistantVM {
             // Business
             case "EXEC_CREATE_CUSTOMER": return executeCreateCustomer();
             case "EXEC_CREATE_EMPLOYEE": return executeCreateEmployee();
+            case "EXEC_UPDATE_EMPLOYEE": return executeUpdateEmployee();
+            case "EXEC_DELETE_EMPLOYEE": return executeDeleteEmployee();
             case "EXEC_START_PROCESS": return executeStartProcess();
             // Roles
             case "EXEC_CREATE_ROLE": return executeCreateRole();
@@ -380,6 +413,43 @@ public class AssistantVM {
             return true;
         } catch (Exception e) {
             messages.add(msg("Error al crear empleado: " + e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean executeUpdateEmployee() {
+        try {
+            TenantContext.setCurrentTenant(user.getTenantId());
+            Map<String, String> sel = getSelectedRecord();
+            Map<String, String> data = engine.getActiveFlow().getData();
+            UUID id = UUID.fromString(sel.get("_id"));
+            String firstName = data.getOrDefault("new_firstName", sel.get("firstName"));
+            String lastName = data.getOrDefault("new_lastName", sel.get("lastName"));
+            String email = data.getOrDefault("new_email", sel.get("email"));
+            String position = data.containsKey("new_position") ? data.get("new_position") : sel.get("position");
+            String department = data.containsKey("new_department") ? data.get("new_department") : sel.get("department");
+            boolean active = data.containsKey("new_active")
+                    ? Boolean.parseBoolean(data.get("new_active"))
+                    : Boolean.parseBoolean(sel.getOrDefault("active", "true"));
+            getEmployeeService().update(id, new UpdateEmployeeRequest(
+                    firstName, lastName, email, position, department, null, active));
+            messages.add(msg("Empleado actualizado exitosamente."));
+            return true;
+        } catch (Exception e) {
+            messages.add(msg("Error al actualizar empleado: " + e.getMessage()));
+            return false;
+        }
+    }
+
+    private boolean executeDeleteEmployee() {
+        try {
+            TenantContext.setCurrentTenant(user.getTenantId());
+            Map<String, String> sel = getSelectedRecord();
+            getEmployeeService().delete(UUID.fromString(sel.get("_id")));
+            messages.add(msg("Empleado eliminado exitosamente."));
+            return true;
+        } catch (Exception e) {
+            messages.add(msg("Error al eliminar empleado: " + e.getMessage()));
             return false;
         }
     }
@@ -756,16 +826,37 @@ public class AssistantVM {
         return result;
     }
 
-    private void postNavigate(String page) {
-        Map<String, Object> args = new HashMap<>();
-        args.put("page", page);
-        BindUtils.postGlobalCommand(null, null, "navigateTo", args);
+    /**
+     * Publishes a regular navigation event (no force-reload).
+     * Uses the {@link NavigationQueue} so the event reaches {@link LayoutVM}
+     * regardless of binder scope.
+     *
+     * <p>Package-visible for testing.</p>
+     */
+    void postNavigate(String page) {
+        if (page == null || page.isBlank()) return;
+        navigationQueue.publish(new NavigationEvent(page, false));
     }
 
-    private void postNavigateForceReload(String page) {
-        Map<String, Object> args = new HashMap<>();
-        args.put("page", page);
-        BindUtils.postGlobalCommand(null, null, "navigateForceReload", args);
+    /**
+     * Publishes a force-reload navigation event.
+     * Causes {@link LayoutVM} to reset the {@code <include>} src to {@code null}
+     * before loading the new page — ensuring a fresh component tree even when
+     * the page path has not changed.
+     *
+     * <p>Package-visible for testing.</p>
+     */
+    void postNavigateForceReload(String page) {
+        if (page == null || page.isBlank()) return;
+        navigationQueue.publish(new NavigationEvent(page, true));
+    }
+
+    /**
+     * Allows unit tests to inject a fake {@link NavigationQueue}.
+     * Not intended for production use.
+     */
+    void setNavigationQueue(NavigationQueue queue) {
+        this.navigationQueue = queue;
     }
 
     private Set<String> resolveAllowedSchemas() {

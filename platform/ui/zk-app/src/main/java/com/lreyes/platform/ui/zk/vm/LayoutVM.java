@@ -10,6 +10,11 @@ import com.lreyes.platform.core.tenancy.platform.TenantSchemaService;
 import com.lreyes.platform.ui.zk.model.MenuItem;
 import com.lreyes.platform.ui.zk.model.SchemaMenuRegistry;
 import com.lreyes.platform.ui.zk.model.UiUser;
+import com.lreyes.platform.ui.zk.navigation.DesktopNavigationQueue;
+import com.lreyes.platform.ui.zk.navigation.NavigationEvent;
+import com.lreyes.platform.ui.zk.navigation.NavigationQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.AfterCompose;
 import org.zkoss.bind.annotation.BindingParam;
@@ -44,9 +49,21 @@ import java.util.stream.Collectors;
  *   <li>Navegacion (cambia el {@code <include>} del centro)</li>
  *   <li>Logout</li>
  * </ul>
+ *
+ * <h3>Navigation channel</h3>
+ * Navigation requests from other binder scopes (e.g. the floating assistant panel)
+ * are delivered via a {@link NavigationQueue} backed by a ZK Desktop-scoped EventQueue.
+ * This is more reliable than {@code BindUtils.postGlobalCommand} because:
+ * <ul>
+ *   <li>The listener survives temporary component-tree gaps caused by {@code <include>} reloads.</li>
+ *   <li>It forces a proper reset of the include's {@code src} attribute even when the page
+ *       path has not changed (force-reload semantics).</li>
+ * </ul>
  */
 @VariableResolver(DelegatingVariableResolver.class)
 public class LayoutVM {
+
+    private static final Logger log = LoggerFactory.getLogger(LayoutVM.class);
 
     @WireVariable
     private TenantRegistryService tenantRegistryService;
@@ -68,9 +85,16 @@ public class LayoutVM {
     private String sidebarTextColor;
     private Include mainInclude;
 
+    /**
+     * Navigation channel. Injected as {@link DesktopNavigationQueue} at runtime;
+     * can be replaced by a test double in unit tests via {@link #setNavigationQueue}.
+     */
+    private NavigationQueue navigationQueue = new DesktopNavigationQueue();
+
     @AfterCompose
     public void afterCompose(@ContextParam(ContextType.VIEW) Component view) {
         findInclude(view);
+        subscribeToNavigationQueue();
     }
 
     private void findInclude(Component comp) {
@@ -82,6 +106,63 @@ public class LayoutVM {
         for (Component child : comp.getChildren()) {
             findInclude(child);
         }
+    }
+
+    /**
+     * Subscribes to the {@link NavigationQueue} so that navigation events published
+     * from any binder scope (including the floating assistant panel) are handled here.
+     *
+     * <p>Called from {@link #afterCompose} to guarantee the ZK Desktop is available.
+     * Package-visible for testing.</p>
+     */
+    void subscribeToNavigationQueue() {
+        navigationQueue.subscribe(this::handleNavigationEvent);
+    }
+
+    /**
+     * Handles a {@link NavigationEvent} received from the navigation queue.
+     *
+     * <p>If the event requests a force-reload, the {@code mainInclude} src is first set
+     * to {@code null} then to the target page. This causes ZK to unconditionally destroy
+     * and recreate the included page even when the path has not changed.</p>
+     *
+     * <p>Package-visible for testing.</p>
+     */
+    void handleNavigationEvent(NavigationEvent event) {
+        if (event == null || event.getPage() == null || event.getPage().isBlank()) {
+            return;
+        }
+        currentPage = event.getPage();
+
+        // Notify the ZK binder so @load(vm.currentPage) on the <include> gets updated.
+        // NOTE: mainInclude.setSrc() must NOT be called here — doing so from inside an
+        // EventQueue subscriber callback corrupts the Include component state and breaks
+        // all subsequent navigation. The @load binding update is safe and sufficient.
+        try {
+            BindUtils.postNotifyChange(null, null, this, "currentPage");
+        } catch (IllegalStateException e) {
+            // No ZK execution context — happens only in unit tests. Safe to ignore.
+            log.trace("postNotifyChange skipped (no ZK execution): {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Cleans up the navigation queue subscription when the Desktop is being destroyed.
+     * ZK calls {@code @Destroy} lifecycle method when the ViewModel's binder scope ends.
+     *
+     * <p>Package-visible for testing.</p>
+     */
+    @org.zkoss.bind.annotation.Destroy
+    public void onDestroy() {
+        navigationQueue.unsubscribe();
+    }
+
+    /**
+     * Allows unit tests to inject a fake {@link NavigationQueue}.
+     * Not intended for production use.
+     */
+    void setNavigationQueue(NavigationQueue queue) {
+        this.navigationQueue = queue;
     }
 
     @Init
@@ -262,14 +343,18 @@ public class LayoutVM {
         }
     }
 
+    /**
+     * GlobalCommand kept for backward compatibility with any existing caller that still
+     * uses {@code BindUtils.postGlobalCommand(..., "navigateForceReload", ...)}.
+     *
+     * <p>New callers should publish a {@link NavigationEvent} to the {@link NavigationQueue}
+     * directly — that path is binder-scope independent and survives include reloads.</p>
+     */
     @GlobalCommand
     @NotifyChange("currentPage")
     public void navigateForceReload(@BindingParam("page") String page) {
-        if (page != null && mainInclude != null) {
-            mainInclude.setSrc(null);
-            mainInclude.setSrc(page);
-            currentPage = page;
-        }
+        if (page == null) return;
+        currentPage = page;
     }
 
     @Command

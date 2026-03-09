@@ -29,7 +29,7 @@ public class AssistantEngine {
 
     public enum FlowType {
         // Business
-        CREATE_CUSTOMER, CREATE_EMPLOYEE, START_PROCESS,
+        CREATE_CUSTOMER, CREATE_EMPLOYEE, EDIT_EMPLOYEE, DELETE_EMPLOYEE, START_PROCESS,
         // Admin – Role
         CREATE_ROLE, EDIT_ROLE, DELETE_ROLE,
         // Admin – User
@@ -136,6 +136,7 @@ public class AssistantEngine {
     );
 
     private static final List<CrudAction> EDIT_ACTIONS = List.of(
+        new CrudAction(FlowType.EDIT_EMPLOYEE, "hr", "empleado", "empleado", "empleados"),
         new CrudAction(FlowType.EDIT_ROLE, "admin", "rol", "rol", "roles"),
         new CrudAction(FlowType.EDIT_USER, "admin", "usuario", "usuario", "usuarios"),
         new CrudAction(FlowType.EDIT_CATALOG, "admin", "catálogo", "catalogo", "catalogos"),
@@ -145,6 +146,7 @@ public class AssistantEngine {
     );
 
     private static final List<CrudAction> DELETE_ACTIONS = List.of(
+        new CrudAction(FlowType.DELETE_EMPLOYEE, "hr", "empleado", "empleado", "empleados"),
         new CrudAction(FlowType.DELETE_ROLE, "admin", "rol", "rol", "roles"),
         new CrudAction(FlowType.DELETE_USER, "admin", "usuario", "usuario", "usuarios"),
         new CrudAction(FlowType.DELETE_CATALOG, "admin", "catálogo", "catalogo", "catalogos"),
@@ -187,6 +189,10 @@ public class AssistantEngine {
     private static final String[][] PLATFORM_USER_FIELDS = {
         {"email", "Email"}, {"fullName", "Nombre completo"},
         {"enabled", "Activo (sí/no)"}, {"password", "Contraseña (vacío=no cambiar)"}
+    };
+    private static final String[][] EMPLOYEE_FIELDS = {
+        {"firstName", "Nombre"}, {"lastName", "Apellido"}, {"email", "Email"},
+        {"position", "Cargo"}, {"department", "Departamento"}, {"active", "Activo (sí/no)"}
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -551,10 +557,12 @@ public class AssistantEngine {
             case CREATE_SCHEMA: return processCreateSchema(normalized, raw);
             case CREATE_PLATFORM_USER: return processCreatePlatformUser(normalized, raw);
             // ── Edits (genérico) ──
+            case EDIT_EMPLOYEE:
             case EDIT_ROLE: case EDIT_USER: case EDIT_CATALOG:
             case EDIT_TENANT: case EDIT_PLATFORM_USER:
                 return processEditGeneric(normalized, raw);
             // ── Deletes (genérico) ──
+            case DELETE_EMPLOYEE:
             case DELETE_ROLE: case DELETE_USER: case DELETE_CATALOG:
             case DELETE_PLATFORM_USER:
                 return processDeleteGeneric(normalized);
@@ -1024,7 +1032,7 @@ public class AssistantEngine {
         sb.append("Ejemplos rápidos:\n");
         sb.append("  \"ir a inicio\"\n");
         if (schemas.contains("sales")) sb.append("  \"crear cliente\", \"ir a tareas\"\n");
-        if (schemas.contains("hr")) sb.append("  \"crear empleado\", \"ir a empleados\"\n");
+        if (schemas.contains("hr")) sb.append("  \"crear empleado\", \"editar empleado\", \"eliminar empleado\", \"ir a empleados\"\n");
         if (isAdmin || isPlatformAdmin) {
             sb.append("  \"crear rol\", \"editar usuario admin\", \"eliminar catálogo\"\n");
             sb.append("  \"asignar permisos\"\n");
@@ -1051,7 +1059,10 @@ public class AssistantEngine {
                 sb.append("  crear cliente → Nombre, email, teléfono\n");
                 sb.append("  iniciar proceso / nueva venta → Pedido, monto\n");
             }
-            if (schemas.contains("hr")) sb.append("  crear empleado → Nombre, email, cargo, contraseña\n");
+            if (schemas.contains("hr")) {
+                sb.append("  crear empleado → Nombre, email, cargo, contraseña\n");
+                sb.append("  editar empleado [nombre] / eliminar empleado [nombre]\n");
+            }
         }
 
         if (isAdmin || isPlatformAdmin) {
@@ -1112,6 +1123,7 @@ public class AssistantEngine {
     private boolean isEditFlow() {
         if (activeFlow == null) return false;
         switch (activeFlow.getType()) {
+            case EDIT_EMPLOYEE:
             case EDIT_ROLE: case EDIT_USER: case EDIT_CATALOG:
             case EDIT_TENANT: case EDIT_PLATFORM_USER: return true;
             default: return false;
@@ -1121,6 +1133,7 @@ public class AssistantEngine {
     private boolean isDeleteFlow() {
         if (activeFlow == null) return false;
         switch (activeFlow.getType()) {
+            case DELETE_EMPLOYEE:
             case DELETE_ROLE: case DELETE_USER: case DELETE_CATALOG:
             case DELETE_PLATFORM_USER: return true;
             default: return false;
@@ -1135,6 +1148,7 @@ public class AssistantEngine {
     private String getEntityCode() {
         if (activeFlow == null) return "";
         switch (activeFlow.getType()) {
+            case EDIT_EMPLOYEE: case DELETE_EMPLOYEE: return "EMPLOYEE";
             case EDIT_ROLE: case DELETE_ROLE: return "ROLE";
             case EDIT_USER: case DELETE_USER: return "USER";
             case EDIT_CATALOG: case DELETE_CATALOG: return "CATALOG";
@@ -1148,6 +1162,7 @@ public class AssistantEngine {
     private String[][] getFieldsForType() {
         if (activeFlow == null) return new String[0][];
         switch (activeFlow.getType()) {
+            case EDIT_EMPLOYEE: return EMPLOYEE_FIELDS;
             case EDIT_ROLE: return ROLE_FIELDS;
             case EDIT_USER: return USER_FIELDS;
             case EDIT_CATALOG: return CATALOG_FIELDS;
@@ -1160,6 +1175,8 @@ public class AssistantEngine {
     private String getExecCommand() {
         if (activeFlow == null) return "";
         switch (activeFlow.getType()) {
+            case EDIT_EMPLOYEE: return "EXEC_UPDATE_EMPLOYEE";
+            case DELETE_EMPLOYEE: return "EXEC_DELETE_EMPLOYEE";
             case EDIT_ROLE: return "EXEC_UPDATE_ROLE";
             case DELETE_ROLE: return "EXEC_DELETE_ROLE";
             case EDIT_USER: return "EXEC_UPDATE_USER";
@@ -1177,6 +1194,7 @@ public class AssistantEngine {
     private String getNavPage() {
         if (activeFlow == null) return null;
         switch (activeFlow.getType()) {
+            case EDIT_EMPLOYEE: case DELETE_EMPLOYEE: return "~./zul/employees/list.zul";
             case EDIT_ROLE: case DELETE_ROLE: case CREATE_ROLE: return "~./zul/admin/roles.zul";
             case EDIT_USER: case DELETE_USER: case CREATE_USER: return "~./zul/admin/users.zul";
             case EDIT_CATALOG: case DELETE_CATALOG: case CREATE_CATALOG: return "~./zul/admin/catalogs.zul";

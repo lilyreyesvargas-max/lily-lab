@@ -43,7 +43,7 @@ public class EmployeeListVM {
 
     @Init
     public void init() {
-        user = ZkSecurityHelper.requireRole(RoleConstants.ADMIN, RoleConstants.GESTOR);
+        user = ZkSecurityHelper.requireAuthenticated();
         employeeService = SpringUtil.getApplicationContext().getBean(EmployeeServicePort.class);
         loadData();
     }

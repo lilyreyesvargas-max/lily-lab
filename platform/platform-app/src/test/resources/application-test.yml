@@ -28,7 +28,7 @@ app:
     mode: jwt-local
     jwt-secret: test-secret-key-minimum-256-bits-long-for-hs256-signing
   tenants:
-    - TEST
+    - test
 
 logging:
   level:

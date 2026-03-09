@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +72,7 @@ public class TenantJdbcRepository {
         jdbc.update(con -> {
             PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO tenants (name, display_name, active, primary_color, logo_path) VALUES (?, ?, ?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS);
+                    new String[]{"id"});
             ps.setString(1, tenant.getName());
             ps.setString(2, tenant.getDisplayName());
             ps.setBoolean(3, tenant.isActive());
