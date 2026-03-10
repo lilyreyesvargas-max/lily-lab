@@ -10,9 +10,9 @@ COMPOSE = docker compose
 ODOO_CONTAINER = clinic_odoo
 DB_CONTAINER = clinic_db
 ODOO_DB = odoo_clinic
-ODOO_ADMIN = admin
+ODOO_ADMIN = admin@clinic.local
 ODOO_PASS = admin_local_strong
-ODOO_URL = http://localhost:8069
+ODOO_URL = http://localhost:8070
 SCRIPTS = ./scripts
 
 help: ## Show this help
@@ -20,19 +20,29 @@ help: ## Show this help
 	  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # ─── Infrastructure ───────────────────────────────────────────
-init: ## First-time setup: start services and initialize Odoo DB
+init: ## First-time setup: start services and initialize Odoo DB with all clinic modules
 	@echo ">>> Copying .env (if not present)..."
 	@test -f .env || cp .env.example .env
 	@echo ">>> Starting services..."
 	$(COMPOSE) up -d
-	@echo ">>> Waiting for Odoo to be ready..."
-	@until curl -s $(ODOO_URL)/web/database/selector > /dev/null 2>&1; do \
-	  echo "  ...waiting"; sleep 5; done
-	@echo ">>> Initializing database with base modules..."
+	@echo ">>> Waiting for PostgreSQL to be ready..."
+	@until $(COMPOSE) exec -T db pg_isready -U odoo > /dev/null 2>&1; do \
+	  echo "  ...waiting for db"; sleep 3; done
+	@echo ">>> Initializing Odoo DB and installing all clinic modules..."
 	$(COMPOSE) exec -T odoo odoo --config=/etc/odoo/odoo.conf \
-	  --database=$(ODOO_DB) --init=base,mail,account \
-	  --stop-after-init --without-demo=False
-	@echo ">>> Init complete. Open http://localhost:8069"
+	  --database=$(ODOO_DB) \
+	  --init=clinic_core,clinic_patients,clinic_hr_payroll,clinic_ehr,\
+clinic_appointments,clinic_insurance_billing,clinic_inventory_internal,\
+clinic_edi_us,clinic_automation \
+	  --without-demo=False \
+	  --stop-after-init --no-http
+	@echo ">>> Assigning clinic_group_admin to admin user..."
+	$(COMPOSE) exec -T odoo python3 /mnt/extra-addons/../scripts/assign_admin_group.py \
+	  --url http://localhost:8069 --db $(ODOO_DB) \
+	  --user $(ODOO_ADMIN) --password $(ODOO_PASS) 2>/dev/null || true
+	@echo ""
+	@echo ">>> Init complete. Open $(ODOO_URL)"
+	@echo ">>> Login: $(ODOO_ADMIN) / $(ODOO_PASS)"
 
 up: ## Start all services
 	$(COMPOSE) up -d
@@ -152,5 +162,5 @@ edi-demo: ## Full EDI demo: generate → send → import → eligibility
 	@echo ""
 	@echo "========================================="
 	@echo "  EDI Demo Complete!"
-	@echo "  Check http://localhost:8069"
+	@echo "  Check $(ODOO_URL)"
 	@echo "========================================="
