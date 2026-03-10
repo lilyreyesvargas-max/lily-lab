@@ -3,17 +3,35 @@
    Odoo 17 / Bootstrap 5
    ========================================================= */
 
+/* ─── Dashboard scroll container ────────────────────────── */
+
+.o_action:has(.clinic-dashboard-root) {
+    overflow-y: auto !important;
+    height: 100%;
+}
+
+.clinic-dashboard-root {
+    overflow-y: auto;
+    height: 100%;
+    padding-bottom: 2rem;
+}
+
 /* ─── KPI Cards ─────────────────────────────────────────── */
 
 .clinic-kpi-card {
-    cursor: pointer;
+    cursor: pointer !important;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
     border-width: 2px !important;
+}
+
+.clinic-kpi-card * {
+    pointer-events: none;
 }
 
 .clinic-kpi-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.15) !important;
+    cursor: pointer !important;
 }
 
 .clinic-kpi-card .card-body {
