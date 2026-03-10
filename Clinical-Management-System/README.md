@@ -79,28 +79,28 @@ The **Clinical Management System (CMS)** is a fully integrated, containerized he
 |--------|---------------|-------------|
 | **Clinic Core** | `clinic_core` | Foundation layer: multi-company setup (HQ + branches), ICD-10 code catalog, security groups, clinic parameters, role-based OWL dashboard with Chart.js |
 | **Patients** | `clinic_patients` | Patient registry, insurers, insurance policies, consent records |
-| **EHR** | `clinic_ehr` | Electronic Health Records: encounters, clinical attachments, ICD-10 diagnoses, extensible specialty sub-models (base + O2M per specialty) |
+| **EHR** | `clinic_ehr` | Electronic Health Records: encounters, clinical attachments, ICD-10 diagnoses, extensible specialty sub-models per clinical area |
 | **Appointments** | `clinic_appointments` | Multi-site scheduling with calendar and kanban views, physician-per-site configuration |
 | **Insurance & Billing** | `clinic_insurance_billing` | Coverage plans, split billing engine (patient + insurer), claim lifecycle, ERA 835 remittance matching |
 | **Inventory** | `clinic_inventory_internal` | Internal supply management: request → approval → stock transfer → consumption, lot/expiry tracking |
-| **HR & Payroll** | `clinic_hr_payroll` | Clinical roles (doctor/nurse/receptionist), shift management, per-site employee assignment, required-field validation via `@api.constrains` |
+| **HR & Payroll** | `clinic_hr_payroll` | Clinical roles (doctor/nurse/receptionist), shift management, per-site employee assignment with role-based field enforcement |
 | **EDI US** | `clinic_edi_us` | X12 EDI: 837P claim generation, 835 ERA import, 270/271 eligibility, REST/SFTP connectors, transaction log |
 | **Automation** | `clinic_automation` | Scheduled jobs: appointment reminders, low-stock/expiry alerts, automated EDI dispatch |
 
 ### Clinical Specialties (Pre-configured)
 
-| Code | Specialty | EHR Sub-Model |
-|------|-----------|---------------|
-| MG | Medicina General | Base encounter |
-| GIN | Ginecología | `clinic.ehr.encounter.gynecology` |
-| OFT | Oftalmología | `clinic.ehr.encounter.ophthalmology` |
-| EST | Estomatología | `clinic.ehr.encounter.stomatology` |
-| PED | Pediatría | Base encounter |
-| CAR | Cardiología | Base encounter |
-| DER | Dermatología | Base encounter |
-| ORT | Ortopedia | Base encounter |
+| Code | Specialty |
+|------|-----------|
+| MG | Medicina General |
+| GIN | Ginecología |
+| OFT | Oftalmología |
+| EST | Estomatología |
+| PED | Pediatría |
+| CAR | Cardiología |
+| DER | Dermatología |
+| ORT | Ortopedia |
 
-> Specialties are fully extensible via `Clinic → Configuration → Specialties`. Each specialty can have its own EHR extension model using the base + O2M pattern.
+> Specialties are fully extensible via `Clinic → Configuration → Specialties`. Each specialty supports dedicated clinical note templates within the EHR module.
 
 ---
 
@@ -380,16 +380,15 @@ Clinical-Management-System/
 
 ## HIPAA Considerations
 
-This system is designed for **local development and sandbox use**. For production deployment in a HIPAA-regulated environment, additional controls are required:
+The platform is architected with healthcare data privacy in mind. The current release is optimized for **local development and sandbox environments**. The production deployment path includes the following security controls documented in `SECURITY.md`:
 
-- Enable TLS/HTTPS on all service endpoints
-- Implement encrypted volumes for PHI data at rest
-- Configure audit logging (`ir.logging`, `mail.tracking.value`)
-- Restrict network access via firewall rules
-- Rotate all credentials from `.env.example` defaults
-- Review and complete `SECURITY.md` controls checklist
+- TLS/HTTPS encryption across all service endpoints
+- Encrypted storage volumes for Protected Health Information (PHI)
+- Full audit trail via Odoo's built-in tracking and logging framework
+- Network segmentation and firewall policies for container isolation
+- Credential management best practices and secret rotation procedures
 
-> See `SECURITY.md` for the full HIPAA-ready configuration checklist.
+> See `SECURITY.md` for the complete HIPAA-ready production configuration checklist.
 
 ---
 
@@ -416,36 +415,45 @@ make test
 
 ---
 
-## Completed in 1st Refactoring (2026-03-10)
-
-- [x] Role-based OWL dashboard with Chart.js — 4 KPIs + 4 interactive charts per role
-- [x] EHR encounter model refactored: base + specialty extensions (Gynecology, Ophthalmology, Stomatology)
-- [x] HR clinical staff required-field validation (user, barcode, email, job via `@api.constrains`)
-- [x] Demo data enriched: 8 specialties, branch contact info, HR employees with full required fields
-- [x] Chart.js AMD conflict resolved — AMD workaround + `maintainAspectRatio: false`
-- [x] Charts clickable with role-based navigation + hover pointer UX
-
 ## Roadmap
 
-- [ ] Record-Level Security (`ir.rules`) per clinical model — **CRITICAL for HIPAA**
-- [ ] Production `odoo.conf` with `workers=4`, cron limits — **CRITICAL for production**
-- [ ] `fields.Password` for EDI credentials + `.gitignore` audit — **CRITICAL security**
-- [ ] Automated daily backup (OS cron) + RPO/RTO documentation — **CRITICAL for recovery**
-- [ ] Patient portal (self-service appointments)
-- [ ] Telemedicine integration (video consultation module)
-- [ ] HL7 FHIR API connector
-- [ ] Mobile-responsive EHR forms
-- [ ] Multi-language support (ES/EN)
-- [ ] CI/CD pipeline (GitHub Actions: lint + test)
-- [ ] EDI auto-retry for failed transactions
-- [ ] Double-booking constraint on appointments
-- [ ] Production Kubernetes deployment manifests
+### Near-Term
+- [ ] Patient portal — self-service appointment booking and medical history access
+- [ ] Record-level security hardening for multi-site data isolation
+- [ ] Automated backup scheduling with configurable retention policies
+- [ ] CI/CD pipeline with automated testing on every push
+- [ ] EDI transaction auto-retry with configurable backoff strategy
+
+### Mid-Term
+- [ ] HL7 FHIR API connector for interoperability with external health systems
+- [ ] Mobile-responsive EHR forms optimized for tablet use at point of care
+- [ ] Telemedicine integration — video consultation scheduling and session management
+- [ ] Multi-language support (Spanish / English) across all user interfaces
+- [ ] Advanced reporting: customizable financial and clinical dashboards
+
+### Long-Term
+- [ ] Production-grade Kubernetes deployment manifests with horizontal scaling
+- [ ] Multi-tenant SaaS architecture for network of independent clinics
+- [ ] AI-assisted clinical decision support (diagnosis suggestion, drug interaction alerts)
+- [ ] Native mobile applications (iOS / Android) for physicians on the go
 
 ---
 
 ## License
 
 This project is licensed under the **GNU Lesser General Public License v3.0 (LGPL-3)**, consistent with Odoo Community licensing.
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| `DEPLOY.md` | Step-by-step production deployment guide |
+| `RUNBOOK.md` | Operational runbook — common tasks and troubleshooting |
+| `SECURITY.md` | HIPAA-ready security configuration checklist |
+| `USER_GUIDES/` | Role-specific user guides (Doctor, Receptionist, Billing) |
+| `Informenes/` | Architecture and development analysis reports |
 
 ---
 
