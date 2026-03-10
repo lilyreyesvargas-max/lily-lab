@@ -1,5 +1,6 @@
 import time
 import logging
+from datetime import datetime, timedelta
 from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
@@ -156,9 +157,12 @@ class ClinicAutomationConfig(models.Model):
         if not EdiTransaction:
             _logger.info('cron_run_edi_jobs: clinic.edi.transaction not available')
             return
+        retry_window = datetime.now() - timedelta(hours=24)
+        retried = 0
         for cfg in configs:
             try:
                 if cfg.edi_auto_send:
+                    # Send validated outbound transactions
                     drafts = EdiTransaction.search([
                         ('state', '=', 'validated'),
                         ('direction', '=', 'outbound'),
@@ -170,6 +174,23 @@ class ClinicAutomationConfig(models.Model):
                             sent += 1
                         except Exception as e:
                             _logger.error('EDI send error tx=%d: %s', tx.id, e)
+
+                    # Retry failed outbound transactions from last 24h
+                    failed = EdiTransaction.search([
+                        ('state', '=', 'error'),
+                        ('direction', '=', 'outbound'),
+                        ('company_id', '=', cfg.company_id.id),
+                        ('write_date', '>=', fields.Datetime.to_string(retry_window)),
+                    ])
+                    for tx in failed:
+                        try:
+                            _logger.info('EDI retry tx=%d (last error: %s)', tx.id,
+                                         (tx.validation_errors or '')[:80])
+                            tx.action_send_rest()
+                            retried += 1
+                        except Exception as e:
+                            _logger.warning('EDI retry failed tx=%d: %s', tx.id, e)
+
                 if cfg.edi_auto_import:
                     received = EdiTransaction.search([
                         ('state', '=', 'received'),
@@ -188,5 +209,6 @@ class ClinicAutomationConfig(models.Model):
         duration = int((time.time() - t0) * 1000)
         if configs:
             configs[0]._log('edi_send', 'success',
-                            f'Sent {sent}, imported {imported}', sent + imported, duration)
-        _logger.info('cron_run_edi_jobs: sent=%d imported=%d', sent, imported)
+                            f'Sent {sent}, retried {retried}, imported {imported}',
+                            sent + retried + imported, duration)
+        _logger.info('cron_run_edi_jobs: sent=%d retried=%d imported=%d', sent, retried, imported)

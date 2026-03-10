@@ -1,0 +1,247 @@
+name: CI — Clinical Management System
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Job 1: Python Syntax & Structure Validation ──────────────────────────
+  validate:
+    name: Validate Module Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check Python syntax (all modules)
+        run: |
+          echo "=== Checking Python syntax in all modules ==="
+          find extra-addons -name "*.py" | while read f; do
+            python3 -m py_compile "$f" || { echo "SYNTAX ERROR: $f"; exit 1; }
+          done
+          echo "✓ All Python files are syntactically valid"
+
+      - name: Validate __manifest__.py structure
+        run: |
+          echo "=== Validating __manifest__.py files ==="
+          python3 - <<'EOF'
+          import os, ast, sys
+
+          errors = []
+          required_keys = ['name', 'version', 'depends', 'installable']
+
+          for root, dirs, files in os.walk('extra-addons'):
+              if '__manifest__.py' in files:
+                  path = os.path.join(root, '__manifest__.py')
+                  try:
+                      with open(path) as f:
+                          manifest = ast.literal_eval(f.read())
+                      for key in required_keys:
+                          if key not in manifest:
+                              errors.append(f"{path}: missing key '{key}'")
+                      if not manifest.get('version', '').startswith('17.0'):
+                          errors.append(f"{path}: version must start with '17.0'")
+                  except Exception as e:
+                      errors.append(f"{path}: parse error — {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"✗ {e}")
+              sys.exit(1)
+          else:
+              print(f"✓ All __manifest__.py files are valid")
+          EOF
+
+      - name: Check security CSV format
+        run: |
+          echo "=== Validating ir.model.access.csv files ==="
+          python3 - <<'EOF'
+          import os, csv, sys
+
+          errors = []
+          expected_header = ['id','name','model_id:id','group_id:id',
+                             'perm_read','perm_write','perm_create','perm_unlink']
+
+          for root, dirs, files in os.walk('extra-addons'):
+              for f in files:
+                  if f == 'ir.model.access.csv':
+                      path = os.path.join(root, f)
+                      try:
+                          with open(path) as fh:
+                              reader = csv.DictReader(fh)
+                              header = reader.fieldnames or []
+                              for col in expected_header:
+                                  if col not in header:
+                                      errors.append(f"{path}: missing column '{col}'")
+                      except Exception as e:
+                          errors.append(f"{path}: {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"✗ {e}")
+              sys.exit(1)
+          else:
+              print(f"✓ All ir.model.access.csv files have correct headers")
+          EOF
+
+      - name: Check XML syntax (views, security, data)
+        run: |
+          echo "=== Validating XML files ==="
+          python3 - <<'EOF'
+          import os, sys
+          from xml.etree import ElementTree
+
+          errors = []
+          for root, dirs, files in os.walk('extra-addons'):
+              for f in files:
+                  if f.endswith('.xml'):
+                      path = os.path.join(root, f)
+                      try:
+                          ElementTree.parse(path)
+                      except ElementTree.ParseError as e:
+                          errors.append(f"{path}: {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"✗ {e}")
+              sys.exit(1)
+          else:
+              print(f"✓ All XML files are well-formed")
+          EOF
+
+      - name: Check for forbidden patterns
+        run: |
+          echo "=== Checking for forbidden patterns ==="
+          ERRORS=0
+
+          # No <list> views (must use <tree> in Odoo 17)
+          if grep -rn "<list>" extra-addons --include="*.xml" | grep -v "<!--"; then
+            echo "✗ Found <list> view tags — use <tree> in Odoo 17"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # No attrs= (deprecated in Odoo 17)
+          if grep -rn 'attrs="' extra-addons --include="*.xml" | grep -v "<!--"; then
+            echo "✗ Found attrs= attribute — use inline invisible= in Odoo 17"
+            ERRORS=$((ERRORS+1))
+          fi
+
+          # No hardcoded passwords in Python (basic check)
+          if grep -rn "password.*=.*['\"].*['\"]" extra-addons --include="*.py" \
+             | grep -v "default\|test\|example\|#\|fields\." | grep -v "test_"; then
+            echo "⚠ Possible hardcoded password found — review manually"
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          fi
+          echo "✓ No forbidden patterns found"
+
+  # ─── Job 2: Odoo Module Tests ─────────────────────────────────────────────
+  test:
+    name: Odoo Module Tests
+    runs-on: ubuntu-latest
+    needs: validate
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_DB: odoo_test
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull Odoo 17 image
+        run: docker pull odoo:17.0
+
+      - name: Run Odoo module tests
+        run: |
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}/extra-addons:/mnt/extra-addons \
+            -e HOST=localhost \
+            -e PORT=5432 \
+            -e USER=odoo \
+            -e PASSWORD=odoo_test \
+            odoo:17.0 odoo \
+              --db_host=localhost \
+              --db_port=5432 \
+              --db_user=odoo \
+              --db_password=odoo_test \
+              --database=odoo_test \
+              --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+              --init=clinic_core,clinic_patients,clinic_ehr,clinic_appointments,\
+          clinic_insurance_billing,clinic_inventory_internal,clinic_hr_payroll,\
+          clinic_automation,clinic_edi_us \
+              --test-enable \
+              --stop-after-init \
+              --log-level=test \
+              --without-demo=False \
+            2>&1 | tee test_output.log
+
+          # Fail if any ERROR in test output
+          if grep -q "ERROR\|CRITICAL\|Traceback" test_output.log; then
+            echo "✗ Tests failed — errors found in output"
+            exit 1
+          fi
+          echo "✓ All tests passed"
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: odoo-test-logs
+          path: test_output.log
+          retention-days: 7
+
+  # ─── Job 3: EDI Script Validation ─────────────────────────────────────────
+  edi-scripts:
+    name: Validate EDI Scripts
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check EDI scripts syntax
+        run: |
+          echo "=== Checking EDI scripts ==="
+          for script in scripts/*.py; do
+            python3 -m py_compile "$script" && echo "✓ $script" || exit 1
+          done
+
+      - name: Validate mock clearinghouse
+        run: |
+          echo "=== Checking mock clearinghouse ==="
+          pip install fastapi uvicorn python-multipart --quiet
+          python3 -c "
+          import sys
+          sys.path.insert(0, 'mock-clearinghouse')
+          import main
+          print('✓ mock-clearinghouse/main.py imports successfully')
+          "
