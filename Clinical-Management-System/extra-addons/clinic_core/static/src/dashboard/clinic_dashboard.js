@@ -70,9 +70,13 @@ export class ClinicDashboard extends Component {
 
         this.chartARef = useRef("chartA");
         this.chartBRef = useRef("chartB");
+        this.chartCRef = useRef("chartC");
+        this.chartDRef = useRef("chartD");
 
         this._chartA = null;
         this._chartB = null;
+        this._chartC = null;
+        this._chartD = null;
 
         this.state = useState({
             // Role flags
@@ -101,19 +105,30 @@ export class ClinicDashboard extends Component {
             kpi3Sub:   "",
             kpi4Sub:   "",
 
-            // Chart titles
+            // Chart titles and types
             chartATitle: "Appointments by State",
             chartBTitle: "Claims by State",
+            chartCTitle: "",
+            chartDTitle: "",
 
-            // Chart data (set before onMounted)
             chartAType:   "bar",
             chartBType:   "doughnut",
+            chartCType:   "bar",
+            chartDType:   "doughnut",
+
+            // Chart data (set before onMounted)
             chartALabels: [],
             chartAData:   [],
             chartAColors: [],
             chartBLabels: [],
             chartBData:   [],
             chartBColors: [],
+            chartCLabels: [],
+            chartCData:   [],
+            chartCColors: [],
+            chartDLabels: [],
+            chartDData:   [],
+            chartDColors: [],
         });
 
         onWillStart(async () => {
@@ -143,6 +158,8 @@ export class ClinicDashboard extends Component {
         onWillUnmount(() => {
             if (this._chartA) { this._chartA.destroy(); this._chartA = null; }
             if (this._chartB) { this._chartB.destroy(); this._chartB = null; }
+            if (this._chartC) { this._chartC.destroy(); this._chartC = null; }
+            if (this._chartD) { this._chartD.destroy(); this._chartD = null; }
         });
     }
 
@@ -230,13 +247,49 @@ export class ClinicDashboard extends Component {
             s.chartBData   = [0, 0, 0, 0];
             s.chartBColors = claimColors;
         }
+
+        // Chart C: Remittances by status (doughnut)
+        s.chartCTitle = "Remittances by Status";
+        s.chartCType  = "doughnut";
+        const remStates  = ["pending", "processed", "rejected"];
+        const remColorsC = [COLORS.purple, COLORS.orange, COLORS.success];
+        try {
+            const rows = await this.orm.readGroup("clinic.remittance", [], ["state"], ["state"]);
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.state] = r.state_count; });
+            s.chartCLabels = remStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = remStates.map(st => dataMap[st] || 0);
+            s.chartCColors = remColorsC;
+        } catch {
+            s.chartCLabels = remStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = [0, 0, 0];
+            s.chartCColors = remColorsC;
+        }
+
+        // Chart D: EDI Transactions by direction (bar)
+        s.chartDTitle = "EDI Transactions by Direction";
+        s.chartDType  = "bar";
+        const ediDirections = ["inbound", "outbound"];
+        const ediColorsD    = [COLORS.info, COLORS.warning];
+        try {
+            const rows = await this.orm.readGroup("clinic.edi.transaction", [], ["direction"], ["direction"]);
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.direction] = r.direction_count; });
+            s.chartDLabels = ediDirections.map(d => d.charAt(0).toUpperCase() + d.slice(1));
+            s.chartDData   = ediDirections.map(d => dataMap[d] || 0);
+            s.chartDColors = ediColorsD;
+        } catch {
+            s.chartDLabels = ediDirections.map(d => d.charAt(0).toUpperCase() + d.slice(1));
+            s.chartDData   = [0, 0];
+            s.chartDColors = ediColorsD;
+        }
     }
 
     // ------------------------------------------------------------------ doctor
 
     async _loadDoctor() {
         const s   = this.state;
-        const uid = user.userId;
+        const uid = this.userService.userId;
         const today = todayStr();
         const weekEnd = datePlusDays(7);
 
@@ -254,7 +307,7 @@ export class ClinicDashboard extends Component {
         } catch { s.kpi1 = 0; }
 
         try {
-            s.kpi2 = await this.orm.searchCount("clinic.encounter", [
+            s.kpi2 = await this.orm.searchCount("clinic.ehr.encounter", [
                 ["physician_id.user_id", "=", uid],
                 ["state", "in", ["in_progress", "pending"]],
             ]);
@@ -300,7 +353,7 @@ export class ClinicDashboard extends Component {
         s.chartAData   = last7Counts;
         s.chartAColors = new Array(7).fill(COLORS.primary);
 
-        // Chart B: My patients by appointment state (doughnut — proxy for specialty distribution)
+        // Chart B: My appointments by state (doughnut)
         s.chartBTitle = "My Appointments by State";
         s.chartBType  = "doughnut";
         const apptStates  = ["draft", "confirmed", "done", "cancelled"];
@@ -321,6 +374,45 @@ export class ClinicDashboard extends Component {
             s.chartBData   = [0, 0, 0, 0];
             s.chartBColors = apptColors;
         }
+
+        // Chart C: My encounters by state (bar)
+        s.chartCTitle = "My Encounters by State";
+        s.chartCType  = "bar";
+        const encStates  = ["draft", "in_progress", "done", "cancelled"];
+        const encColorsC = [COLORS.purple, COLORS.orange, COLORS.success, COLORS.danger];
+        try {
+            const rows = await this.orm.readGroup(
+                "clinic.ehr.encounter",
+                [["physician_id.user_id", "=", uid]],
+                ["state"], ["state"]
+            );
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.state] = r.state_count; });
+            s.chartCLabels = encStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
+            s.chartCData   = encStates.map(st => dataMap[st] || 0);
+            s.chartCColors = encColorsC;
+        } catch {
+            s.chartCLabels = encStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
+            s.chartCData   = [0, 0, 0, 0];
+            s.chartCColors = encColorsC;
+        }
+
+        // Chart D: Patients by gender (doughnut)
+        s.chartDTitle = "Patients by Gender";
+        s.chartDType  = "doughnut";
+        const genderColorsD = [COLORS.info, COLORS.warning, COLORS.secondary];
+        try {
+            const male   = await this.orm.searchCount("clinic.patient", [["gender", "=", "male"]]);
+            const female = await this.orm.searchCount("clinic.patient", [["gender", "=", "female"]]);
+            const other  = await this.orm.searchCount("clinic.patient", [["gender", "=", "other"]]);
+            s.chartDLabels = ["Male", "Female", "Other"];
+            s.chartDData   = [male, female, other];
+            s.chartDColors = genderColorsD;
+        } catch {
+            s.chartDLabels = ["Male", "Female", "Other"];
+            s.chartDData   = [0, 0, 0];
+            s.chartDColors = genderColorsD;
+        }
     }
 
     // ------------------------------------------------------------------ nurse
@@ -335,11 +427,11 @@ export class ClinicDashboard extends Component {
         s.kpi4Label = "Today's Schedule";  s.kpi4Icon = "fa-calendar";         s.kpi4Color = "info";    s.kpi4Sub = "Appointments today";
 
         try {
-            s.kpi1 = await this.orm.searchCount("clinic.encounter", [["state", "=", "in_progress"]]);
+            s.kpi1 = await this.orm.searchCount("clinic.ehr.encounter", [["state", "=", "in_progress"]]);
         } catch { s.kpi1 = 0; }
 
         try {
-            s.kpi2 = await this.orm.searchCount("clinic.stock.item", [["qty_available", "<", 1]]);
+            s.kpi2 = await this.orm.searchCount("stock.quant", [["quantity", "<=", 5]]);
         } catch { s.kpi2 = 0; }
 
         try {
@@ -357,18 +449,24 @@ export class ClinicDashboard extends Component {
             ]);
         } catch { s.kpi4 = 0; }
 
-        // Chart A: Stock alerts by category (bar) — fallback: encounter states
+        // Chart A: Stock alerts by category (bar) — stock.quant qty <= 5, grouped by product categ
         s.chartATitle = "Stock Alerts by Category";
         s.chartAType  = "bar";
         try {
             const rows = await this.orm.readGroup(
-                "clinic.stock.item",
-                [["qty_available", "<", 1]],
-                ["category_id"], ["category_id"]
+                "stock.quant",
+                [["quantity", "<=", 5]],
+                ["product_id.categ_id"], ["product_id.categ_id"]
             );
-            s.chartALabels = rows.map(r => (r.category_id ? r.category_id[1] : "Uncategorized"));
-            s.chartAData   = rows.map(r => r.category_id_count || 0);
-            s.chartAColors = rows.map((_, i) => Object.values(COLORS)[i % Object.values(COLORS).length]);
+            if (rows && rows.length > 0) {
+                s.chartALabels = rows.map(r => (r["product_id.categ_id"] ? r["product_id.categ_id"][1] : "Uncategorized"));
+                s.chartAData   = rows.map(r => r["product_id.categ_id_count"] || 0);
+                s.chartAColors = rows.map((_, i) => Object.values(COLORS)[i % Object.values(COLORS).length]);
+            } else {
+                s.chartALabels = ["No Alerts"];
+                s.chartAData   = [0];
+                s.chartAColors = [COLORS.secondary];
+            }
         } catch {
             s.chartALabels = ["No Data"];
             s.chartAData   = [0];
@@ -382,7 +480,7 @@ export class ClinicDashboard extends Component {
         const encColors = [COLORS.secondary, COLORS.warning, COLORS.success, COLORS.danger];
         try {
             const rows = await this.orm.readGroup(
-                "clinic.encounter",
+                "clinic.ehr.encounter",
                 [
                     ["date_encounter", ">=", today + " 00:00:00"],
                     ["date_encounter", "<=", today + " 23:59:59"],
@@ -391,13 +489,56 @@ export class ClinicDashboard extends Component {
             );
             const dataMap = {};
             rows.forEach(r => { dataMap[r.state] = r.state_count; });
-            s.chartBLabels = encStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartBLabels = encStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
             s.chartBData   = encStates.map(st => dataMap[st] || 0);
             s.chartBColors = encColors;
         } catch {
-            s.chartBLabels = encStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartBLabels = encStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
             s.chartBData   = [0, 0, 0, 0];
             s.chartBColors = encColors;
+        }
+
+        // Chart C: Supply requests by state (bar)
+        s.chartCTitle = "Supply Requests by State";
+        s.chartCType  = "bar";
+        const supplyStates  = ["draft", "confirmed", "received", "cancelled"];
+        const supplyColorsC = [COLORS.purple, COLORS.orange, COLORS.success, COLORS.danger];
+        try {
+            const rows = await this.orm.readGroup("clinic.supply.request", [], ["state"], ["state"]);
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.state] = r.state_count; });
+            s.chartCLabels = supplyStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = supplyStates.map(st => dataMap[st] || 0);
+            s.chartCColors = supplyColorsC;
+        } catch {
+            s.chartCLabels = supplyStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = [0, 0, 0, 0];
+            s.chartCColors = supplyColorsC;
+        }
+
+        // Chart D: Appointments today by state (doughnut)
+        s.chartDTitle = "Appointments Today by State";
+        s.chartDType  = "doughnut";
+        const apptStates  = ["draft", "confirmed", "done", "cancelled"];
+        const apptColorsD = [COLORS.info, COLORS.warning, COLORS.secondary, COLORS.primary];
+        try {
+            const rows = await this.orm.readGroup(
+                "clinic.appointment",
+                [
+                    ["date_appointment", ">=", today + " 00:00:00"],
+                    ["date_appointment", "<=", today + " 23:59:59"],
+                ],
+                ["state"], ["state"]
+            );
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.state] = r.state_count; });
+            s.chartDLabels = apptStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartDData   = apptStates.map(st => dataMap[st] || 0);
+            s.chartDColors = apptColorsD;
+        } catch {
+            s.chartDLabels = apptStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartDData   = [0, 0, 0, 0];
+            s.chartDColors = apptColorsD;
         }
     }
 
@@ -492,6 +633,60 @@ export class ClinicDashboard extends Component {
             s.chartBData   = [0, 0, 0, 0];
             s.chartBColors = apptColors;
         }
+
+        // Chart C: New patients this week — per day (bar)
+        s.chartCTitle = "New Patients This Week";
+        s.chartCType  = "bar";
+        const week7Labels = last7DayLabels();
+        const week7Counts = new Array(7).fill(0);
+        const weekStartDate = datePlusDays(-6);
+        try {
+            const rows = await this.orm.searchRead(
+                "clinic.patient",
+                [
+                    ["create_date", ">=", weekStartDate + " 00:00:00"],
+                    ["create_date", "<=", today + " 23:59:59"],
+                ],
+                ["create_date"]
+            );
+            rows.forEach(r => {
+                if (!r.create_date) return;
+                const dStr = r.create_date.slice(0, 10);
+                const dObj = new Date(dStr + "T00:00:00");
+                const idx  = Math.round((dObj - new Date(weekStartDate + "T00:00:00")) / 86400000);
+                if (idx >= 0 && idx < 7) week7Counts[idx]++;
+            });
+        } catch { /* defaults to 0 */ }
+        s.chartCLabels = week7Labels;
+        s.chartCData   = week7Counts;
+        s.chartCColors = new Array(7).fill(COLORS.purple);
+
+        // Chart D: Appointments by physician today (bar)
+        s.chartDTitle = "Appointments by Physician Today";
+        s.chartDType  = "bar";
+        try {
+            const rows = await this.orm.readGroup(
+                "clinic.appointment",
+                [
+                    ["date_appointment", ">=", today + " 00:00:00"],
+                    ["date_appointment", "<=", today + " 23:59:59"],
+                ],
+                ["physician_id"], ["physician_id"]
+            );
+            if (rows && rows.length > 0) {
+                s.chartDLabels = rows.map(r => (r.physician_id ? r.physician_id[1] : "Unassigned"));
+                s.chartDData   = rows.map(r => r.physician_id_count || 0);
+                s.chartDColors = rows.map((_, i) => [COLORS.info, COLORS.warning, COLORS.secondary, COLORS.primary][i % 4]);
+            } else {
+                s.chartDLabels = ["No Appointments"];
+                s.chartDData   = [0];
+                s.chartDColors = [COLORS.info];
+            }
+        } catch {
+            s.chartDLabels = ["No Data"];
+            s.chartDData   = [0];
+            s.chartDColors = [COLORS.info];
+        }
     }
 
     // ------------------------------------------------------------------ billing
@@ -517,7 +712,7 @@ export class ClinicDashboard extends Component {
         } catch { s.kpi3 = 0; }
         try { s.kpi4 = await this.orm.searchCount("clinic.billing.claim", [["state", "=", "rejected"]]); } catch { s.kpi4 = 0; }
 
-        // Chart A: Claims by state (doughnut — same as admin B but primary for billing)
+        // Chart A: Claims by state (doughnut)
         s.chartATitle = "Claims by State";
         s.chartAType  = "doughnut";
         const claimStates = ["draft", "submitted", "paid", "rejected"];
@@ -552,6 +747,44 @@ export class ClinicDashboard extends Component {
             s.chartBData   = [0, 0, 0, 0];
             s.chartBColors = remColors;
         }
+
+        // Chart C: EDI transactions by state (bar)
+        s.chartCTitle = "EDI Transactions by State";
+        s.chartCType  = "bar";
+        const ediStates  = ["draft", "sent", "acknowledged", "rejected"];
+        const ediColorsC = [COLORS.purple, COLORS.orange, COLORS.success, COLORS.danger];
+        try {
+            const rows = await this.orm.readGroup("clinic.edi.transaction", [], ["state"], ["state"]);
+            const dataMap = {};
+            rows.forEach(r => { dataMap[r.state] = r.state_count; });
+            s.chartCLabels = ediStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = ediStates.map(st => dataMap[st] || 0);
+            s.chartCColors = ediColorsC;
+        } catch {
+            s.chartCLabels = ediStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCData   = [0, 0, 0, 0];
+            s.chartCColors = ediColorsC;
+        }
+
+        // Chart D: Claims by insurance provider (bar)
+        s.chartDTitle = "Claims by Insurance Provider";
+        s.chartDType  = "bar";
+        try {
+            const rows = await this.orm.readGroup("clinic.billing.claim", [], ["insurer_id"], ["insurer_id"]);
+            if (rows && rows.length > 0) {
+                s.chartDLabels = rows.map(r => (r.insurer_id ? r.insurer_id[1] : "No Insurer"));
+                s.chartDData   = rows.map(r => r.insurer_id_count || 0);
+                s.chartDColors = rows.map((_, i) => [COLORS.info, COLORS.warning, COLORS.secondary, COLORS.primary][i % 4]);
+            } else {
+                s.chartDLabels = ["No Data"];
+                s.chartDData   = [0];
+                s.chartDColors = [COLORS.info];
+            }
+        } catch {
+            s.chartDLabels = ["No Data"];
+            s.chartDData   = [0];
+            s.chartDColors = [COLORS.info];
+        }
     }
 
     // ------------------------------------------------------------------ chart rendering
@@ -562,6 +795,8 @@ export class ClinicDashboard extends Component {
         // Destroy previous instances (safe re-render)
         if (this._chartA) { this._chartA.destroy(); this._chartA = null; }
         if (this._chartB) { this._chartB.destroy(); this._chartB = null; }
+        if (this._chartC) { this._chartC.destroy(); this._chartC = null; }
+        if (this._chartD) { this._chartD.destroy(); this._chartD = null; }
 
         const s = this.state;
 
@@ -609,6 +844,56 @@ export class ClinicDashboard extends Component {
                         legend: { display: true },
                     },
                     scales: s.chartBType === "bar"
+                        ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        : {},
+                },
+            });
+        }
+
+        if (this.chartCRef.el) {
+            this._chartC = new window.Chart(this.chartCRef.el, {
+                type: s.chartCType,
+                data: {
+                    labels: s.chartCLabels,
+                    datasets: [{
+                        label: s.chartCTitle,
+                        data:  s.chartCData,
+                        backgroundColor: s.chartCColors,
+                        borderColor:     s.chartCColors,
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: s.chartCType === "doughnut" },
+                    },
+                    scales: s.chartCType === "bar"
+                        ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        : {},
+                },
+            });
+        }
+
+        if (this.chartDRef.el) {
+            this._chartD = new window.Chart(this.chartDRef.el, {
+                type: s.chartDType,
+                data: {
+                    labels: s.chartDLabels,
+                    datasets: [{
+                        label: s.chartDTitle,
+                        data:  s.chartDData,
+                        backgroundColor: s.chartDColors,
+                        borderColor:     s.chartDColors,
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                    },
+                    scales: s.chartDType === "bar"
                         ? { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
                         : {},
                 },

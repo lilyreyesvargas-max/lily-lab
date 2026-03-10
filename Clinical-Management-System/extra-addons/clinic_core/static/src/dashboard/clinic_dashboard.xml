@@ -74,18 +74,18 @@
 
                 </div>
 
-                <!-- ═══════════════════════════════════════════════════ Charts Row -->
-                <div class="row g-3">
+                <!-- ═══════════════════════════════════════════════════ Charts Row 1 -->
+                <div class="row g-3 mb-3">
 
                     <!-- Chart A -->
                     <div class="col-md-6">
                         <div class="card shadow-sm clinic-chart-card">
                             <div class="card-header fw-bold d-flex align-items-center">
-                                <i class="fa fa-bar-chart me-2 text-primary"/>
+                                <i t-att-class="'fa me-2 text-primary ' + (state.chartAType === 'doughnut' ? 'fa-pie-chart' : 'fa-bar-chart')"/>
                                 <span t-esc="state.chartATitle"/>
                             </div>
                             <div class="card-body d-flex align-items-center justify-content-center">
-                                <canvas t-ref="chartA" style="max-height:300px; width:100%;"/>
+                                <canvas t-ref="chartA" style="max-height:260px; width:100%;"/>
                             </div>
                         </div>
                     </div>
@@ -94,11 +94,42 @@
                     <div class="col-md-6">
                         <div class="card shadow-sm clinic-chart-card">
                             <div class="card-header fw-bold d-flex align-items-center">
-                                <i class="fa fa-pie-chart me-2 text-primary"/>
+                                <i t-att-class="'fa me-2 text-primary ' + (state.chartBType === 'doughnut' ? 'fa-pie-chart' : 'fa-bar-chart')"/>
                                 <span t-esc="state.chartBTitle"/>
                             </div>
                             <div class="card-body d-flex align-items-center justify-content-center">
-                                <canvas t-ref="chartB" style="max-height:300px; width:100%;"/>
+                                <canvas t-ref="chartB" style="max-height:260px; width:100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ═══════════════════════════════════════════════════ Charts Row 2 -->
+                <div class="row g-3">
+
+                    <!-- Chart C -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm clinic-chart-card">
+                            <div class="card-header fw-bold d-flex align-items-center">
+                                <i t-att-class="'fa me-2 text-primary ' + (state.chartCType === 'doughnut' ? 'fa-pie-chart' : 'fa-bar-chart')"/>
+                                <span t-esc="state.chartCTitle"/>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <canvas t-ref="chartC" style="max-height:260px; width:100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart D -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm clinic-chart-card">
+                            <div class="card-header fw-bold d-flex align-items-center">
+                                <i t-att-class="'fa me-2 text-primary ' + (state.chartDType === 'doughnut' ? 'fa-pie-chart' : 'fa-bar-chart')"/>
+                                <span t-esc="state.chartDTitle"/>
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center">
+                                <canvas t-ref="chartD" style="max-height:260px; width:100%;"/>
                             </div>
                         </div>
                     </div>
