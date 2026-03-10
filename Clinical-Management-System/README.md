@@ -19,13 +19,14 @@ The **Clinical Management System (CMS)** is a fully integrated, containerized he
 | Domain | Capability |
 |--------|-----------|
 | **Patient Management** | Registration, insurance policies, consent management |
-| **Clinical (EHR)** | Encounters, diagnoses (ICD-10), specialty-specific notes |
+| **Clinical (EHR)** | Encounters, diagnoses (ICD-10), extensible specialty sub-models (Gynecology, Ophthalmology, Stomatology) |
 | **Scheduling** | Multi-site appointment calendar with kanban view |
 | **Billing & Insurance** | Split billing, claim lifecycle, ERA 835 reconciliation |
 | **EDI Compliance** | X12 837P/835/270/271 with sandbox clearinghouse |
 | **Inventory** | Internal supply request → approval → transfer → consumption |
-| **HR & Payroll** | Clinical roles, shift management, multi-site employees |
+| **HR & Payroll** | Clinical roles with required-field validation, shift management, multi-site employees |
 | **Automation** | Appointment reminders, stock alerts, scheduled EDI jobs |
+| **Role-Based Dashboard** | OWL component with Chart.js — 4 KPIs + 4 charts per role, click-through navigation |
 
 ---
 
@@ -76,26 +77,46 @@ The **Clinical Management System (CMS)** is a fully integrated, containerized he
 
 | Module | Technical Name | Description |
 |--------|---------------|-------------|
-| **Clinic Core** | `clinic_core` | Foundation layer: multi-company setup (HQ + branches), ICD-10 code catalog, security groups, clinic parameters, OWL dashboard |
+| **Clinic Core** | `clinic_core` | Foundation layer: multi-company setup (HQ + branches), ICD-10 code catalog, security groups, clinic parameters, role-based OWL dashboard with Chart.js |
 | **Patients** | `clinic_patients` | Patient registry, insurers, insurance policies, consent records |
-| **EHR** | `clinic_ehr` | Electronic Health Records: encounters, clinical attachments, ICD-10 diagnoses, specialty-specific sub-modules |
+| **EHR** | `clinic_ehr` | Electronic Health Records: encounters, clinical attachments, ICD-10 diagnoses, extensible specialty sub-models (base + O2M per specialty) |
 | **Appointments** | `clinic_appointments` | Multi-site scheduling with calendar and kanban views, physician-per-site configuration |
 | **Insurance & Billing** | `clinic_insurance_billing` | Coverage plans, split billing engine (patient + insurer), claim lifecycle, ERA 835 remittance matching |
 | **Inventory** | `clinic_inventory_internal` | Internal supply management: request → approval → stock transfer → consumption, lot/expiry tracking |
-| **HR & Payroll** | `clinic_hr_payroll` | Clinical roles (doctor/nurse/receptionist), shift management, per-site employee assignment |
+| **HR & Payroll** | `clinic_hr_payroll` | Clinical roles (doctor/nurse/receptionist), shift management, per-site employee assignment, required-field validation via `@api.constrains` |
 | **EDI US** | `clinic_edi_us` | X12 EDI: 837P claim generation, 835 ERA import, 270/271 eligibility, REST/SFTP connectors, transaction log |
 | **Automation** | `clinic_automation` | Scheduled jobs: appointment reminders, low-stock/expiry alerts, automated EDI dispatch |
 
 ### Clinical Specialties (Pre-configured)
 
-| Code | Specialty |
-|------|-----------|
-| MG | Medicina General |
-| GIN | Ginecología |
-| OFT | Oftalmología |
-| EST | Estomatología |
+| Code | Specialty | EHR Sub-Model |
+|------|-----------|---------------|
+| MG | Medicina General | Base encounter |
+| GIN | Ginecología | `clinic.ehr.encounter.gynecology` |
+| OFT | Oftalmología | `clinic.ehr.encounter.ophthalmology` |
+| EST | Estomatología | `clinic.ehr.encounter.stomatology` |
+| PED | Pediatría | Base encounter |
+| CAR | Cardiología | Base encounter |
+| DER | Dermatología | Base encounter |
+| ORT | Ortopedia | Base encounter |
 
-> Specialties are fully extensible via `Clinic → Configuration → Specialties`.
+> Specialties are fully extensible via `Clinic → Configuration → Specialties`. Each specialty can have its own EHR extension model using the base + O2M pattern.
+
+---
+
+## Role-Based Dashboard
+
+The OWL dashboard automatically detects the logged-in user's clinical role and displays role-specific KPIs and charts.
+
+| Role | KPI Focus | Charts (2×2 Grid) |
+|------|-----------|-------------------|
+| **Administrator** | Patients · Appointments · Claims · Remittances | Appointments by State · Claims by State · Remittances by Status · EDI Transactions |
+| **Doctor** | Today's Appointments · Open Encounters · Week Patients · Stock Alerts | My Appts 7d · My Appts State · My Encounters · Patients by Gender |
+| **Nurse** | Active Encounters · Low Stock · Expiring Items · Today's Schedule | Stock Alerts · Encounters Today · Supply Requests · Appointments Today |
+| **Receptionist** | Today's Appts · Waiting · This Week · New Patients | Appts Next 7d · Today by State · New Patients/Week · By Physician |
+| **Billing** | Draft Claims · Submitted · Paid Month · Rejected | Claims by State · Remittances · EDI Transactions · By Insurance |
+
+> All charts are clickable — clicking navigates to the relevant module view.
 
 ---
 
@@ -304,19 +325,19 @@ sudo docker compose start odoo
 ```
 Clinical-Management-System/
 ├── extra-addons/               # Odoo custom modules (9 modules)
-│   ├── clinic_core/
+│   ├── clinic_core/            # Foundation + OWL dashboard with Chart.js
 │   ├── clinic_patients/
-│   ├── clinic_ehr/
+│   ├── clinic_ehr/             # EHR with base + specialty extensions
 │   ├── clinic_appointments/
 │   ├── clinic_insurance_billing/
 │   ├── clinic_inventory_internal/
-│   ├── clinic_hr_payroll/
+│   ├── clinic_hr_payroll/      # Clinical roles + required-field validation
 │   ├── clinic_automation/
-│   └── clinic_edi_us/
+│   └── clinic_edi_us/          # X12 EDI sandbox
 ├── mock_clearinghouse/         # FastAPI EDI mock server
 ├── scripts/                    # CLI utility scripts
 │   ├── load_demo_data.py           # Core demo data loader
-│   ├── load_demo_hr_inventory_settings.py  # HR/Inventory demo loader
+│   ├── load_demo_hr_inventory_settings.py  # HR/Inventory/Settings demo loader
 │   ├── generate_837.py             # 837P claim generator
 │   ├── send_837.py                 # Clearinghouse submission
 │   ├── import_835.py               # ERA 835 importer
@@ -324,11 +345,15 @@ Clinical-Management-System/
 │   ├── process_271.py              # 271 response processor
 │   └── assign_admin_group.py       # Post-install admin setup
 ├── edi/                        # EDI file directories and samples
+├── Informenes/                 # Architecture & development reports (PDF)
+├── USER_GUIDES/                # Role-specific user guides
 ├── docker-compose.yml
 ├── odoo.conf
 ├── .env.example
 ├── Makefile
 ├── DEPLOY.md
+├── RUNBOOK.md
+├── SECURITY.md
 └── README.md
 ```
 
@@ -391,14 +416,29 @@ make test
 
 ---
 
+## Completed in 1st Refactoring (2026-03-10)
+
+- [x] Role-based OWL dashboard with Chart.js — 4 KPIs + 4 interactive charts per role
+- [x] EHR encounter model refactored: base + specialty extensions (Gynecology, Ophthalmology, Stomatology)
+- [x] HR clinical staff required-field validation (user, barcode, email, job via `@api.constrains`)
+- [x] Demo data enriched: 8 specialties, branch contact info, HR employees with full required fields
+- [x] Chart.js AMD conflict resolved — AMD workaround + `maintainAspectRatio: false`
+- [x] Charts clickable with role-based navigation + hover pointer UX
+
 ## Roadmap
 
+- [ ] Record-Level Security (`ir.rules`) per clinical model — **CRITICAL for HIPAA**
+- [ ] Production `odoo.conf` with `workers=4`, cron limits — **CRITICAL for production**
+- [ ] `fields.Password` for EDI credentials + `.gitignore` audit — **CRITICAL security**
+- [ ] Automated daily backup (OS cron) + RPO/RTO documentation — **CRITICAL for recovery**
 - [ ] Patient portal (self-service appointments)
 - [ ] Telemedicine integration (video consultation module)
 - [ ] HL7 FHIR API connector
-- [ ] Advanced analytics dashboard (OWL + Chart.js)
 - [ ] Mobile-responsive EHR forms
 - [ ] Multi-language support (ES/EN)
+- [ ] CI/CD pipeline (GitHub Actions: lint + test)
+- [ ] EDI auto-retry for failed transactions
+- [ ] Double-booking constraint on appointments
 - [ ] Production Kubernetes deployment manifests
 
 ---
