@@ -2,7 +2,7 @@
 # Clinical Management System - Makefile
 # ============================================================
 .PHONY: help init up down logs shell-odoo shell-db psql backup restore \
-        load_demo test \
+        load_demo load_demo_hr_inventory test \
         edi-generate-837 edi-send-837 edi-import-835 \
         edi-request-eligibility edi-process-eligibility edi-demo
 
@@ -73,6 +73,13 @@ restore: ## Restore latest backup (usage: make restore FILE=backups/xxx.sql.gz)
 	@echo ">>> Restore complete"
 
 # ─── Demo Data ────────────────────────────────────────────────
+load_demo_hr_inventory: ## Load HR, Inventory and Clinic Settings demo data
+	@echo ">>> Loading HR, Inventory and Clinic Settings demo data..."
+	python3 $(SCRIPTS)/load_demo_hr_inventory_settings.py \
+	  --url $(ODOO_URL) --db $(ODOO_DB) \
+	  --user $(ODOO_ADMIN) --password $(ODOO_PASS)
+	@echo ">>> Done"
+
 load_demo: ## Load all demo data (patients, doctors, claims, etc.)
 	@echo ">>> Loading demo data..."
 	$(COMPOSE) exec -T odoo python3 /edi/../mnt/extra-addons/../../../scripts/load_demo_data.py \
