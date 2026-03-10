@@ -14,12 +14,12 @@ import random
 # ─── Connection ───────────────────────────────────────────────────────────────
 
 def connect(url, db, user, password):
-    common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
+    common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common", allow_none=True)
     uid = common.authenticate(db, user, password, {})
     if not uid:
         print(f"[ERROR] Authentication failed for {user}")
         sys.exit(1)
-    models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
+    models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object", allow_none=True)
     print(f"[OK] Connected as uid={uid}")
     return uid, models
 
@@ -317,48 +317,43 @@ def load_inventory_products(models, db, uid, pwd):
 
     print("\n=== INVENTORY — PRODUCTS ===")
 
-    # Get UoM ids
-    uom_unit = models.execute_kw(db, uid, pwd, "uom.uom", "search",
-        [[("name", "=", "Units")]], {"limit": 1})
-    uom_unit = uom_unit[0] if uom_unit else None
-
-    uom_box = search_or_create(models, db, uid, pwd,
-        "uom.uom",
-        [("name", "=", "Box")],
-        {"name": "Box", "category_id": models.execute_kw(
-            db, uid, pwd, "uom.category", "search",
-            [[("name", "=", "Unit")]], {"limit": 1})[0] if
-            models.execute_kw(db, uid, pwd, "uom.category", "search",
-            [[("name", "=", "Unit")]], {"limit": 1}) else 1})
+    # Get UoM — use existing "Units" (or any available)
+    uom_candidates = models.execute_kw(db, uid, pwd, "uom.uom", "search_read",
+        [[("name", "in", ["Units", "Unit", "Unidades", "ud"])]], {"fields": ["id", "name"], "limit": 1})
+    uom_unit = uom_candidates[0]["id"] if uom_candidates else None
+    if not uom_unit:
+        uom_fallback = models.execute_kw(db, uid, pwd, "uom.uom", "search", [[]], {"limit": 1})
+        uom_unit = uom_fallback[0] if uom_fallback else None
 
     products = [
         # Consumables
-        {"name": "Surgical Gloves (Box 100)",   "ref": "INS-001", "cat": cat_consumable, "type": "consumable", "price": 12.50},
-        {"name": "Face Masks (Box 50)",          "ref": "INS-002", "cat": cat_consumable, "type": "consumable", "price": 8.00},
-        {"name": "Sterile Gauze 4x4",           "ref": "INS-003", "cat": cat_consumable, "type": "consumable", "price": 5.75},
-        {"name": "Adhesive Bandages (Box 100)",  "ref": "INS-004", "cat": cat_consumable, "type": "consumable", "price": 6.50},
-        {"name": "Syringes 5ml (Box 100)",       "ref": "INS-005", "cat": cat_consumable, "type": "consumable", "price": 15.00},
-        {"name": "Syringes 10ml (Box 50)",       "ref": "INS-006", "cat": cat_consumable, "type": "consumable", "price": 14.00},
-        {"name": "Alcohol Swabs (Box 200)",      "ref": "INS-007", "cat": cat_consumable, "type": "consumable", "price": 4.25},
-        {"name": "Cotton Rolls 500g",            "ref": "INS-008", "cat": cat_consumable, "type": "consumable", "price": 3.50},
-        {"name": "Tongue Depressors (Box 100)",  "ref": "INS-009", "cat": cat_consumable, "type": "consumable", "price": 4.00},
-        {"name": "Disposable Drapes",            "ref": "INS-010", "cat": cat_consumable, "type": "consumable", "price": 18.00},
+        # Odoo 17: detailed_type values are 'consu' (consumable) and 'product' (storable)
+        {"name": "Surgical Gloves (Box 100)",   "ref": "INS-001", "cat": cat_consumable, "type": "consu",   "price": 12.50},
+        {"name": "Face Masks (Box 50)",          "ref": "INS-002", "cat": cat_consumable, "type": "consu",   "price": 8.00},
+        {"name": "Sterile Gauze 4x4",           "ref": "INS-003", "cat": cat_consumable, "type": "consu",   "price": 5.75},
+        {"name": "Adhesive Bandages (Box 100)",  "ref": "INS-004", "cat": cat_consumable, "type": "consu",   "price": 6.50},
+        {"name": "Syringes 5ml (Box 100)",       "ref": "INS-005", "cat": cat_consumable, "type": "consu",   "price": 15.00},
+        {"name": "Syringes 10ml (Box 50)",       "ref": "INS-006", "cat": cat_consumable, "type": "consu",   "price": 14.00},
+        {"name": "Alcohol Swabs (Box 200)",      "ref": "INS-007", "cat": cat_consumable, "type": "consu",   "price": 4.25},
+        {"name": "Cotton Rolls 500g",            "ref": "INS-008", "cat": cat_consumable, "type": "consu",   "price": 3.50},
+        {"name": "Tongue Depressors (Box 100)",  "ref": "INS-009", "cat": cat_consumable, "type": "consu",   "price": 4.00},
+        {"name": "Disposable Drapes",            "ref": "INS-010", "cat": cat_consumable, "type": "consu",   "price": 18.00},
         # Medications
-        {"name": "Ibuprofen 400mg (Box 30)",     "ref": "MED-001", "cat": cat_medication, "type": "consumable", "price": 9.00},
-        {"name": "Amoxicillin 500mg (Box 21)",   "ref": "MED-002", "cat": cat_medication, "type": "consumable", "price": 12.00},
-        {"name": "Paracetamol 500mg (Box 24)",   "ref": "MED-003", "cat": cat_medication, "type": "consumable", "price": 5.00},
-        {"name": "Lidocaine 2% 50ml",            "ref": "MED-004", "cat": cat_medication, "type": "consumable", "price": 22.00},
-        {"name": "Saline Solution 500ml",        "ref": "MED-005", "cat": cat_medication, "type": "consumable", "price": 7.50},
-        {"name": "Hydrogen Peroxide 1L",         "ref": "MED-006", "cat": cat_medication, "type": "consumable", "price": 6.00},
-        {"name": "Eye Drops (Artificial Tears)", "ref": "MED-007", "cat": cat_medication, "type": "consumable", "price": 14.50},
-        {"name": "Antifungal Cream 30g",         "ref": "MED-008", "cat": cat_medication, "type": "consumable", "price": 11.00},
-        # Equipment
-        {"name": "Disposable Thermometer",       "ref": "EQP-001", "cat": cat_equipment,  "type": "product",    "price": 35.00},
-        {"name": "Blood Pressure Cuff",          "ref": "EQP-002", "cat": cat_equipment,  "type": "product",    "price": 85.00},
-        {"name": "Pulse Oximeter",               "ref": "EQP-003", "cat": cat_equipment,  "type": "product",    "price": 45.00},
-        {"name": "Otoscope Disposable Tip",      "ref": "EQP-004", "cat": cat_equipment,  "type": "consumable", "price": 8.00},
-        {"name": "Dental Probe Set",             "ref": "EQP-005", "cat": cat_equipment,  "type": "product",    "price": 120.00},
-        {"name": "Ophthalmoscope Lens",          "ref": "EQP-006", "cat": cat_equipment,  "type": "product",    "price": 95.00},
+        {"name": "Ibuprofen 400mg (Box 30)",     "ref": "MED-001", "cat": cat_medication, "type": "consu",   "price": 9.00},
+        {"name": "Amoxicillin 500mg (Box 21)",   "ref": "MED-002", "cat": cat_medication, "type": "consu",   "price": 12.00},
+        {"name": "Paracetamol 500mg (Box 24)",   "ref": "MED-003", "cat": cat_medication, "type": "consu",   "price": 5.00},
+        {"name": "Lidocaine 2% 50ml",            "ref": "MED-004", "cat": cat_medication, "type": "consu",   "price": 22.00},
+        {"name": "Saline Solution 500ml",        "ref": "MED-005", "cat": cat_medication, "type": "consu",   "price": 7.50},
+        {"name": "Hydrogen Peroxide 1L",         "ref": "MED-006", "cat": cat_medication, "type": "consu",   "price": 6.00},
+        {"name": "Eye Drops (Artificial Tears)", "ref": "MED-007", "cat": cat_medication, "type": "consu",   "price": 14.50},
+        {"name": "Antifungal Cream 30g",         "ref": "MED-008", "cat": cat_medication, "type": "consu",   "price": 11.00},
+        # Equipment (storable)
+        {"name": "Disposable Thermometer",       "ref": "EQP-001", "cat": cat_equipment,  "type": "product", "price": 35.00},
+        {"name": "Blood Pressure Cuff",          "ref": "EQP-002", "cat": cat_equipment,  "type": "product", "price": 85.00},
+        {"name": "Pulse Oximeter",               "ref": "EQP-003", "cat": cat_equipment,  "type": "product", "price": 45.00},
+        {"name": "Otoscope Disposable Tip",      "ref": "EQP-004", "cat": cat_equipment,  "type": "consu",   "price": 8.00},
+        {"name": "Dental Probe Set",             "ref": "EQP-005", "cat": cat_equipment,  "type": "product", "price": 120.00},
+        {"name": "Ophthalmoscope Lens",          "ref": "EQP-006", "cat": cat_equipment,  "type": "product", "price": 95.00},
     ]
 
     product_ids = []
@@ -367,7 +362,7 @@ def load_inventory_products(models, db, uid, pwd):
             "name": p["name"],
             "default_code": p["ref"],
             "categ_id": p["cat"],
-            "type": p["type"],
+            "detailed_type": p["type"],
             "standard_price": p["price"],
             "list_price": p["price"] * 1.2,
         }
@@ -437,15 +432,15 @@ def load_supply_requests(models, db, uid, pwd, product_ids):
                 "clinic.supply.request", "create", [req_vals])
             print(f"  [CREATE] supply.request id={req_id} [{comp['name']}] state=draft")
 
-            # Advance state
+            # Advance state via write (action_* methods return None → XML-RPC error)
             target = spec["state_after"]
             if target in ("submitted", "approved"):
-                models.execute_kw(db, uid, pwd, "clinic.supply.request",
-                    "action_submit", [[req_id]])
+                models.execute_kw(db, uid, pwd, "clinic.supply.request", "write",
+                    [[req_id], {"state": "submitted"}])
                 print(f"    → submitted")
             if target == "approved":
-                models.execute_kw(db, uid, pwd, "clinic.supply.request",
-                    "action_approve", [[req_id]])
+                models.execute_kw(db, uid, pwd, "clinic.supply.request", "write",
+                    [[req_id], {"state": "approved", "approved_by": uid_user}])
                 print(f"    → approved")
             created += 1
 
