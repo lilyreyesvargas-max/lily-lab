@@ -14,11 +14,17 @@ class ClinicEdiConfig(models.Model):
         ('rest', 'REST API'), ('sftp', 'SFTP'), ('both', 'REST + SFTP'),
     ], string='Transport', default='rest')
     rest_url = fields.Char(string='REST Base URL')
-    rest_api_key = fields.Char(string='API Key')
+    rest_api_key = fields.Char(
+        string='API Key',
+        groups='clinic_core.clinic_group_admin',
+    )
     sftp_host = fields.Char(string='SFTP Host')
     sftp_port = fields.Integer(string='SFTP Port', default=22)
     sftp_user = fields.Char(string='SFTP User')
-    sftp_password = fields.Char(string='SFTP Password')
+    sftp_password = fields.Char(
+        string='SFTP Password',
+        groups='clinic_core.clinic_group_admin',
+    )
     sftp_in_path = fields.Char(string='SFTP Inbound Path', default='/edi/in')
     sftp_out_path = fields.Char(string='SFTP Outbound Path', default='/edi/out')
     sender_id = fields.Char(string='Sender ID (ISA06)', default='SENDCLINIC')

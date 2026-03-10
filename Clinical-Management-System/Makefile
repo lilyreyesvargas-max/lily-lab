@@ -1,7 +1,7 @@
 # ============================================================
 # Clinical Management System - Makefile
 # ============================================================
-.PHONY: help init up down logs shell-odoo shell-db psql backup restore \
+.PHONY: help init up down logs shell-odoo shell-db psql backup restore backup-setup \
         load_demo load_demo_hr_inventory test \
         edi-generate-837 edi-send-837 edi-import-835 \
         edi-request-eligibility edi-process-eligibility edi-demo
@@ -66,6 +66,14 @@ backup: ## Backup database to ./backups/
 	@mkdir -p backups
 	$(COMPOSE) exec -T db pg_dump -U odoo $(ODOO_DB) | gzip > backups/$(ODOO_DB)_$$(date +%Y%m%d_%H%M%S).sql.gz
 	@echo ">>> Backup saved to backups/"
+
+backup-setup: ## Install daily automated backup via system cron (runs at 2:00 AM)
+	@echo ">>> Setting up daily automated backup cron job..."
+	@CRON_CMD="0 2 * * * cd $(PWD) && $(SCRIPTS)/backup_cron.sh >> /var/log/cms_backup.log 2>&1"
+	@(crontab -l 2>/dev/null | grep -v "backup_cron.sh"; echo "0 2 * * * cd $(PWD) && $(SCRIPTS)/backup_cron.sh >> /var/log/cms_backup.log 2>&1") | crontab -
+	@echo ">>> Cron job installed. Runs daily at 02:00. Retains 30 days of backups."
+	@echo ">>> Log: /var/log/cms_backup.log"
+	@crontab -l | grep backup_cron
 
 restore: ## Restore latest backup (usage: make restore FILE=backups/xxx.sql.gz)
 	@test -n "$(FILE)" || (echo "Usage: make restore FILE=backups/xxx.sql.gz" && exit 1)
