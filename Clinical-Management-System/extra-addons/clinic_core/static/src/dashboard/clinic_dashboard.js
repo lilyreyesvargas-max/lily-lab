@@ -2,7 +2,6 @@
 import { registry } from "@web/core/registry";
 import { Component, useState, onWillStart, onMounted, onWillUnmount, useRef } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { user } from "@web/core/user";
 import { loadJS } from "@web/core/assets";
 
 // Bootstrap 5 palette used for charts
@@ -65,8 +64,9 @@ function next7DayLabels() {
 
 export class ClinicDashboard extends Component {
     setup() {
-        this.orm    = useService("orm");
-        this.action = useService("action");
+        this.orm         = useService("orm");
+        this.action      = useService("action");
+        this.userService = useService("user");
 
         this.chartARef = useRef("chartA");
         this.chartBRef = useRef("chartB");
@@ -136,15 +136,15 @@ export class ClinicDashboard extends Component {
 
     async _detectRole() {
         try {
-            const isAdmin         = await user.hasGroup("clinic_core.clinic_group_admin");
+            const isAdmin         = await this.userService.hasGroup("clinic_core.clinic_group_admin");
             if (isAdmin) { this.state.role = "admin"; this.state.roleLabel = "Administrator"; return; }
-            const isDoctor        = await user.hasGroup("clinic_core.clinic_group_doctor");
+            const isDoctor        = await this.userService.hasGroup("clinic_core.clinic_group_doctor");
             if (isDoctor) { this.state.role = "doctor"; this.state.roleLabel = "Doctor"; return; }
-            const isNurse         = await user.hasGroup("clinic_core.clinic_group_nurse");
+            const isNurse         = await this.userService.hasGroup("clinic_core.clinic_group_nurse");
             if (isNurse) { this.state.role = "nurse"; this.state.roleLabel = "Nurse"; return; }
-            const isReceptionist  = await user.hasGroup("clinic_core.clinic_group_receptionist");
+            const isReceptionist  = await this.userService.hasGroup("clinic_core.clinic_group_receptionist");
             if (isReceptionist) { this.state.role = "receptionist"; this.state.roleLabel = "Receptionist"; return; }
-            const isBilling       = await user.hasGroup("clinic_core.clinic_group_billing");
+            const isBilling       = await this.userService.hasGroup("clinic_core.clinic_group_billing");
             if (isBilling) { this.state.role = "billing"; this.state.roleLabel = "Billing"; return; }
             // fallback — superuser or unassigned user → show admin view
             this.state.role = "admin";
