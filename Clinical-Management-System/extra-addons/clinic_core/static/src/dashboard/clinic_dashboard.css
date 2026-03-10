@@ -5,15 +5,16 @@
 
 /* ─── Dashboard scroll container ────────────────────────── */
 
+.o_action_manager:has(.clinic-dashboard-root),
+.o_content:has(.clinic-dashboard-root),
 .o_action:has(.clinic-dashboard-root) {
     overflow-y: auto !important;
-    height: 100%;
+    overflow-x: hidden !important;
 }
 
 .clinic-dashboard-root {
-    overflow-y: auto;
-    height: 100%;
-    padding-bottom: 2rem;
+    overflow-y: visible;
+    padding-bottom: 3rem;
 }
 
 /* ─── KPI Cards ─────────────────────────────────────────── */

@@ -128,6 +128,16 @@ export class ClinicDashboard extends Component {
 
         onMounted(() => {
             this._renderCharts();
+            // Force scroll on Odoo's parent containers
+            let el = this.chartARef.el;
+            while (el) {
+                const style = window.getComputedStyle(el);
+                if (style.overflow === "hidden" || style.overflowY === "hidden") {
+                    el.style.overflowY = "auto";
+                }
+                el = el.parentElement;
+                if (el && el.classList.contains("o_web_client")) break;
+            }
         });
 
         onWillUnmount(() => {
