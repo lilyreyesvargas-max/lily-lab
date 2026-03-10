@@ -43,66 +43,155 @@ def get_ref(models, db, uid, pwd, xml_id):
 
 # ─── 1. CLINIC SETTINGS ───────────────────────────────────────────────────────
 
-def load_clinic_settings(models, db, uid, pwd):
-    print("\n=== CLINIC SETTINGS ===")
+# Specialties catalog (name, code, description, color)
+SPECIALTIES_CATALOG = [
+    ("Medicina General",   "MG",  "Primary care and general medicine",             1),
+    ("Ginecología",        "GIN", "Women's health and reproductive medicine",       2),
+    ("Oftalmología",       "OFT", "Eye care and vision health",                     3),
+    ("Estomatología",      "EST", "Oral health and dental medicine",                4),
+    ("Pediatría",          "PED", "Medical care for infants and children",          5),
+    ("Cardiología",        "CAR", "Heart and cardiovascular system",                6),
+    ("Dermatología",       "DER", "Skin, hair and nail conditions",                 7),
+    ("Ortopedia",          "ORT", "Bone, joint and musculoskeletal disorders",      8),
+]
 
-    # Get companies created by load_demo_data.py
+# Contact data per branch
+BRANCH_CONTACT = {
+    "Main Clinic HQ": {
+        "phone": "+1 (212) 555-0100", "email": "hq@clinic.local",
+        "street": "350 Fifth Avenue", "city": "New York", "zip": "10118",
+        "website": "http://clinic.local",
+    },
+    "Clinic Branch S1": {
+        "phone": "+1 (718) 555-0101", "email": "s1@clinic.local",
+        "street": "1234 Atlantic Ave", "city": "Brooklyn", "zip": "11216",
+        "website": "http://s1.clinic.local",
+    },
+    "Clinic Branch S2": {
+        "phone": "+1 (718) 555-0202", "email": "s2@clinic.local",
+        "street": "89-11 Jamaica Ave", "city": "Queens", "zip": "11421",
+        "website": "http://s2.clinic.local",
+    },
+    "Clinic Branch S3": {
+        "phone": "+1 (718) 555-0303", "email": "s3@clinic.local",
+        "street": "2432 Grand Concourse", "city": "Bronx", "zip": "10458",
+        "website": "http://s3.clinic.local",
+    },
+}
+
+
+def load_clinic_settings(models, db, uid, pwd):
+    print("\n=== CLINIC SETTINGS — SPECIALTIES ===")
+
+    # ── 1a. Ensure full specialty catalog ────────────────────────────────────
+    spec_map = {}
+    for name, code, desc, color in SPECIALTIES_CATALOG:
+        existing = models.execute_kw(db, uid, pwd, "clinic.specialty", "search",
+            [[("code", "=", code)]], {"limit": 1})
+        if existing:
+            spec_map[name] = existing[0]
+            print(f"  [OK]     specialty '{name}' → id={existing[0]}")
+        else:
+            sid = models.execute_kw(db, uid, pwd, "clinic.specialty", "create", [{
+                "name": name, "code": code, "description": desc, "color": color,
+            }])
+            spec_map[name] = sid
+            print(f"  [CREATE] specialty '{name}' → id={sid}")
+
+    # ── 1b. Get companies ─────────────────────────────────────────────────────
+    print("\n=== CLINIC SETTINGS — COMPANY CONFIG ===")
     companies = models.execute_kw(db, uid, pwd, "res.company", "search_read",
-        [[("name", "in", [
-            "Main Clinic HQ", "Clinic Branch S1",
-            "Clinic Branch S2", "Clinic Branch S3"
-        ])]],
+        [[("name", "in", list(BRANCH_CONTACT.keys()))]],
         {"fields": ["id", "name"]})
 
     if not companies:
         print("  [WARN] Companies not found — run load_demo_data.py first")
-        companies = models.execute_kw(db, uid, pwd, "res.company", "search_read",
-            [[]], {"fields": ["id", "name"], "limit": 4})
+        return
 
-    # Get specialties
-    specialties = models.execute_kw(db, uid, pwd, "clinic.specialty", "search_read",
-        [[("active", "=", True)]], {"fields": ["id", "name"]})
-    spec_ids = [s["id"] for s in specialties]
-    print(f"  Found {len(specialties)} specialties, {len(companies)} companies")
-
+    # Specialty assignment per branch
+    branch_specs = {
+        "Main Clinic HQ":   [spec_map[s] for s in [
+            "Medicina General","Ginecología","Oftalmología","Estomatología",
+            "Pediatría","Cardiología","Dermatología","Ortopedia"]],
+        "Clinic Branch S1": [spec_map[s] for s in [
+            "Medicina General","Ginecología","Pediatría"]],
+        "Clinic Branch S2": [spec_map[s] for s in [
+            "Oftalmología","Estomatología","Dermatología"]],
+        "Clinic Branch S3": [spec_map[s] for s in [
+            "Medicina General","Estomatología","Ortopedia"]],
+    }
     codes = {
-        "Main Clinic HQ":  "HQ-001",
-        "Clinic Branch S1": "S1-001",
-        "Clinic Branch S2": "S2-001",
-        "Clinic Branch S3": "S3-001",
+        "Main Clinic HQ": "HQ-001", "Clinic Branch S1": "S1-001",
+        "Clinic Branch S2": "S2-001", "Clinic Branch S3": "S3-001",
     }
     notes = {
-        "Main Clinic HQ":  "Main headquarters — all specialties available",
-        "Clinic Branch S1": "Brooklyn branch — Medicina General & Ginecología",
-        "Clinic Branch S2": "Queens branch — Oftalmología & Estomatología",
-        "Clinic Branch S3": "Bronx branch — Medicina General & Estomatología",
-    }
-    branch_specs = {
-        "Main Clinic HQ":  spec_ids,
-        "Clinic Branch S1": spec_ids[:2] if len(spec_ids) >= 2 else spec_ids,
-        "Clinic Branch S2": spec_ids[2:4] if len(spec_ids) >= 4 else spec_ids,
-        "Clinic Branch S3": [spec_ids[0], spec_ids[-1]] if len(spec_ids) >= 2 else spec_ids,
+        "Main Clinic HQ":   "Main headquarters — all 8 specialties. Administrative center.",
+        "Clinic Branch S1": "Brooklyn branch — Medicina General, Ginecología, Pediatría.",
+        "Clinic Branch S2": "Queens branch — Oftalmología, Estomatología, Dermatología.",
+        "Clinic Branch S3": "Bronx branch — Medicina General, Estomatología, Ortopedia.",
     }
 
     for comp in companies:
         cname = comp["name"]
-        # Check if clinic.config exists for this company
-        existing = models.execute_kw(db, uid, pwd, "clinic.config", "search",
-            [[("company_id", "=", comp["id"])]], {"limit": 1})
-        sids = branch_specs.get(cname, spec_ids)
-        vals = {
+        contact = BRANCH_CONTACT.get(cname, {})
+
+        # Update company contact info
+        models.execute_kw(db, uid, pwd, "res.company", "write", [[comp["id"]], contact])
+        print(f"  [UPDATE] company contact '{cname}'")
+
+        # Update or create clinic.config
+        sids = branch_specs.get(cname, [])
+        config_vals = {
             "company_id": comp["id"],
             "clinic_code": codes.get(cname, "CLI-000"),
             "specialty_ids": [[6, 0, sids]],
             "notes": notes.get(cname, ""),
         }
+        existing = models.execute_kw(db, uid, pwd, "clinic.config", "search",
+            [[("company_id", "=", comp["id"])]], {"limit": 1})
         if existing:
-            models.execute_kw(db, uid, pwd, "clinic.config", "write",
-                [existing, vals])
-            print(f"  [UPDATE] clinic.config for {cname} (id={existing[0]})")
+            models.execute_kw(db, uid, pwd, "clinic.config", "write", [existing, config_vals])
+            print(f"  [UPDATE] clinic.config '{cname}' — {len(sids)} specialties")
         else:
-            new_id = models.execute_kw(db, uid, pwd, "clinic.config", "create", [vals])
-            print(f"  [CREATE] clinic.config for {cname} → id={new_id}")
+            new_id = models.execute_kw(db, uid, pwd, "clinic.config", "create", [config_vals])
+            print(f"  [CREATE] clinic.config '{cname}' → id={new_id}")
+
+    # ── 1c. Automation config per company ─────────────────────────────────────
+    print("\n=== CLINIC SETTINGS — AUTOMATION CONFIG ===")
+    auto_settings = {
+        "Main Clinic HQ":   {"reminder_hours_before": 24, "expiry_days_warning": 30,
+                             "edi_auto_send": True,  "edi_auto_import": True},
+        "Clinic Branch S1": {"reminder_hours_before": 24, "expiry_days_warning": 30,
+                             "edi_auto_send": False, "edi_auto_import": False},
+        "Clinic Branch S2": {"reminder_hours_before": 12, "expiry_days_warning": 14,
+                             "edi_auto_send": False, "edi_auto_import": False},
+        "Clinic Branch S3": {"reminder_hours_before": 48, "expiry_days_warning": 45,
+                             "edi_auto_send": False, "edi_auto_import": False},
+    }
+    for comp in companies:
+        cname = comp["name"]
+        asettings = auto_settings.get(cname, {})
+        auto_vals = {
+            "company_id": comp["id"],
+            "reminder_enabled": True,
+            "reminder_hours_before": asettings.get("reminder_hours_before", 24),
+            "stock_alert_enabled": True,
+            "stock_min_qty": 5.0,
+            "expiry_alert_enabled": True,
+            "expiry_days_warning": asettings.get("expiry_days_warning", 30),
+            "edi_auto_send": asettings.get("edi_auto_send", False),
+            "edi_auto_import": asettings.get("edi_auto_import", False),
+        }
+        existing_auto = models.execute_kw(db, uid, pwd, "clinic.automation.config", "search",
+            [[("company_id", "=", comp["id"])]], {"limit": 1})
+        if existing_auto:
+            models.execute_kw(db, uid, pwd, "clinic.automation.config", "write",
+                [existing_auto, auto_vals])
+            print(f"  [UPDATE] automation.config '{cname}'")
+        else:
+            new_id = models.execute_kw(db, uid, pwd, "clinic.automation.config", "create",
+                [auto_vals])
+            print(f"  [CREATE] automation.config '{cname}' → id={new_id}")
 
 
 # ─── 2. HR — SHIFTS ───────────────────────────────────────────────────────────
