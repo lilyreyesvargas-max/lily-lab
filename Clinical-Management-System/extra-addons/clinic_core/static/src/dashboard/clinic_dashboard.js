@@ -2,8 +2,7 @@
 import { registry } from "@web/core/registry";
 import { Component, useState, onWillStart, onMounted, onWillUnmount, useRef } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { Chart, registerables } from "@web/../lib/Chart/Chart";
-Chart.register(...registerables);
+import { loadJS } from "@web/core/assets";
 
 // Bootstrap 5 palette used for charts
 const COLORS = {
@@ -118,6 +117,11 @@ export class ClinicDashboard extends Component {
         });
 
         onWillStart(async () => {
+            // Load Chart.js — temporarily disable AMD define so it sets window.Chart
+            const savedDefine = window.define;
+            window.define = undefined;
+            await loadJS("/web/static/lib/Chart/Chart.js");
+            window.define = savedDefine;
             await this._detectRole();
             await this._loadData();
         });
@@ -543,7 +547,7 @@ export class ClinicDashboard extends Component {
     // ------------------------------------------------------------------ chart rendering
 
     _renderCharts() {
-        if (!Chart) return;
+        if (!window.Chart) return;
 
         // Destroy previous instances (safe re-render)
         if (this._chartA) { this._chartA.destroy(); this._chartA = null; }
@@ -552,7 +556,7 @@ export class ClinicDashboard extends Component {
         const s = this.state;
 
         if (this.chartARef.el) {
-            this._chartA = new Chart(this.chartARef.el, {
+            this._chartA = new window.Chart(this.chartARef.el, {
                 type: s.chartAType,
                 data: {
                     labels: s.chartALabels,
@@ -577,7 +581,7 @@ export class ClinicDashboard extends Component {
         }
 
         if (this.chartBRef.el) {
-            this._chartB = new Chart(this.chartBRef.el, {
+            this._chartB = new window.Chart(this.chartBRef.el, {
                 type: s.chartBType,
                 data: {
                     labels: s.chartBLabels,
