@@ -75,10 +75,14 @@
 
 .clinic-chart-card .card-body {
     padding: 1rem;
-    min-height: 260px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .clinic-chart-card canvas {
     display: block;
-    max-width: 100%;
+    width: 100% !important;
+    height: 100% !important;
 }

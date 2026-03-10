@@ -815,6 +815,7 @@ export class ClinicDashboard extends Component {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: s.chartAType === "doughnut" },
                     },
@@ -840,6 +841,7 @@ export class ClinicDashboard extends Component {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: true },
                     },
@@ -865,6 +867,7 @@ export class ClinicDashboard extends Component {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: s.chartCType === "doughnut" },
                     },
@@ -890,6 +893,7 @@ export class ClinicDashboard extends Component {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: true },
                     },
