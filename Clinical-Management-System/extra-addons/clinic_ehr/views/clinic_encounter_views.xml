@@ -69,42 +69,42 @@
                             </group>
                         </page>
                         <page string="Gynecology">
-                            <group>
-                                <group>
+                            <field name="gynecology_ids">
+                                <tree editable="bottom">
                                     <field name="lmp"/>
-                                    <field name="gestational_age" readonly="1"/>
                                     <field name="gravida"/>
                                     <field name="para"/>
                                     <field name="abortus"/>
-                                </group>
-                            </group>
-                            <group string="Notes"><field name="gynecological_notes" nolabel="1"/></group>
+                                    <field name="gestational_age" readonly="1"/>
+                                    <field name="gynecological_notes"/>
+                                </tree>
+                            </field>
                         </page>
                         <page string="Ophthalmology">
-                            <group>
-                                <group string="Right Eye (OD)">
+                            <field name="ophthalmology_ids">
+                                <tree editable="bottom">
                                     <field name="od_sphere"/>
                                     <field name="od_cylinder"/>
                                     <field name="od_axis"/>
                                     <field name="od_va"/>
                                     <field name="iop_od"/>
-                                </group>
-                                <group string="Left Eye (OI)">
                                     <field name="oi_sphere"/>
                                     <field name="oi_cylinder"/>
                                     <field name="oi_axis"/>
                                     <field name="oi_va"/>
                                     <field name="iop_oi"/>
-                                </group>
-                            </group>
-                            <group string="Notes"><field name="ophthalmic_notes" nolabel="1"/></group>
+                                    <field name="ophthalmic_notes"/>
+                                </tree>
+                            </field>
                         </page>
                         <page string="Stomatology">
-                            <group>
-                                <field name="dental_procedure"/>
-                                <field name="periodontal_notes"/>
-                                <field name="tooth_chart"/>
-                            </group>
+                            <field name="stomatology_ids">
+                                <tree editable="bottom">
+                                    <field name="tooth_chart"/>
+                                    <field name="periodontal_notes"/>
+                                    <field name="dental_procedure"/>
+                                </tree>
+                            </field>
                         </page>
                         <page string="Attachments">
                             <field name="attachment_ids" widget="many2many_binary"/>

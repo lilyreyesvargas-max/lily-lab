@@ -9,6 +9,7 @@
     'data': [
         'security/ir.model.access.csv',
         'security/record_rules.xml',
+        'security/record_rules_specialty.xml',
         'data/clinic_ehr_sequence.xml',
         'views/clinic_encounter_views.xml',
         'views/menu_views.xml',

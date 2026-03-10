@@ -81,3 +81,47 @@ class TestClinicEhr(TransactionCase):
         })
         visible = self.env['clinic.ehr.encounter'].with_user(doctor_s1).search([])
         self.assertIn(enc_s1, visible, "Doctor S1 must see encounters from Branch S1")
+
+    # ── Specialty Extension Tests ─────────────────────────────────────────────
+
+    def test_base_encounter_has_no_specialty_fields(self):
+        """Base encounter must not have specialty-specific fields after refactor."""
+        encounter_fields = self.env['clinic.ehr.encounter']._fields
+        self.assertNotIn('lmp', encounter_fields)
+        self.assertNotIn('od_sphere', encounter_fields)
+        self.assertNotIn('tooth_chart', encounter_fields)
+
+    def test_gynecology_extension_creation(self):
+        encounter = self.env['clinic.ehr.encounter'].create({
+            'patient_id': self.patient.id,
+        })
+        gyn = self.env['clinic.ehr.encounter.gynecology'].create({
+            'encounter_id': encounter.id,
+            'gravida': 2,
+            'para': 1,
+            'abortus': 0,
+        })
+        self.assertEqual(gyn.encounter_id, encounter)
+        self.assertGreaterEqual(gyn.gestational_age, 0)
+
+    def test_ophthalmology_extension_creation(self):
+        encounter = self.env['clinic.ehr.encounter'].create({
+            'patient_id': self.patient.id,
+        })
+        oph = self.env['clinic.ehr.encounter.ophthalmology'].create({
+            'encounter_id': encounter.id,
+            'od_sphere': -2.0,
+            'od_va': '20/40',
+            'iop_od': 14.0,
+        })
+        self.assertEqual(oph.encounter_id, encounter)
+
+    def test_stomatology_extension_creation(self):
+        encounter = self.env['clinic.ehr.encounter'].create({
+            'patient_id': self.patient.id,
+        })
+        stoma = self.env['clinic.ehr.encounter.stomatology'].create({
+            'encounter_id': encounter.id,
+            'dental_procedure': 'Extraction #18',
+        })
+        self.assertEqual(stoma.encounter_id, encounter)

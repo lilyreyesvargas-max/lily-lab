@@ -1,5 +1,3 @@
-from datetime import date
-
 from odoo import api, fields, models
 
 
@@ -41,30 +39,13 @@ class ClinicEhrEncounter(models.Model):
     bmi = fields.Float(string='BMI', compute='_compute_bmi', store=True, digits=(5, 1))
     respiratory_rate = fields.Integer(string='Respiratory Rate')
     oxygen_saturation = fields.Float(string='O2 Saturation (%)', digits=(5, 1))
-    # Gynecology
-    lmp = fields.Date(string='LMP (Last Menstrual Period)')
-    gravida = fields.Integer(string='Gravida')
-    para = fields.Integer(string='Para')
-    abortus = fields.Integer(string='Abortus')
-    gestational_age = fields.Integer(string='Gestational Age (weeks)',
-                                     compute='_compute_gestational_age', store=True)
-    gynecological_notes = fields.Text(string='Gynecological Notes')
-    # Ophthalmology
-    od_sphere = fields.Float(string='OD Sphere', digits=(5, 2))
-    od_cylinder = fields.Float(string='OD Cylinder', digits=(5, 2))
-    od_axis = fields.Integer(string='OD Axis')
-    oi_sphere = fields.Float(string='OI Sphere', digits=(5, 2))
-    oi_cylinder = fields.Float(string='OI Cylinder', digits=(5, 2))
-    oi_axis = fields.Integer(string='OI Axis')
-    od_va = fields.Char(string='OD Visual Acuity')
-    oi_va = fields.Char(string='OI Visual Acuity')
-    iop_od = fields.Float(string='IOP OD (mmHg)', digits=(5, 1))
-    iop_oi = fields.Float(string='IOP OI (mmHg)', digits=(5, 1))
-    ophthalmic_notes = fields.Text(string='Ophthalmic Notes')
-    # Stomatology
-    tooth_chart = fields.Text(string='Odontogram (JSON)')
-    periodontal_notes = fields.Text(string='Periodontal Notes')
-    dental_procedure = fields.Text(string='Dental Procedure')
+    # Specialty extensions (One2many to dedicated extension models)
+    gynecology_ids = fields.One2many(
+        'clinic.ehr.encounter.gynecology', 'encounter_id', string='Gynecology')
+    ophthalmology_ids = fields.One2many(
+        'clinic.ehr.encounter.ophthalmology', 'encounter_id', string='Ophthalmology')
+    stomatology_ids = fields.One2many(
+        'clinic.ehr.encounter.stomatology', 'encounter_id', string='Stomatology')
 
     @api.depends('ref', 'patient_id')
     def _compute_name(self):
@@ -79,15 +60,6 @@ class ClinicEhrEncounter(models.Model):
                 rec.bmi = round(rec.weight / (h_m * h_m), 1)
             else:
                 rec.bmi = 0.0
-
-    @api.depends('lmp')
-    def _compute_gestational_age(self):
-        today = date.today()
-        for rec in self:
-            if rec.lmp:
-                rec.gestational_age = (today - rec.lmp).days // 7
-            else:
-                rec.gestational_age = 0
 
     @api.model_create_multi
     def create(self, vals_list):
