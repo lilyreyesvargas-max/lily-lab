@@ -942,7 +942,7 @@ export class ClinicDashboard extends Component {
     openRemittances()     { try { this.action.doAction("clinic_insurance_billing.action_clinic_remittance"); }              catch {} }
     openEncounters()      { try { this.action.doAction("clinic_encounters.action_clinic_encounter"); }                      catch {} }
     openStock()           { try { this.action.doAction("clinic_inventory.action_clinic_stock_item"); }                      catch {} }
-    openEdi()             { try { this.action.doAction("clinic_edi.action_clinic_edi_transaction"); }                       catch {} }
+    openEdi()             { try { this.action.doAction("clinic_edi_us.action_clinic_edi_transaction"); }                    catch {} }
     openSupplyRequests()  { try { this.action.doAction("clinic_inventory.action_clinic_supply_request"); }                  catch {} }
 
     // ------------------------------------------------------------------ KPI click dispatchers
