@@ -8,15 +8,21 @@
     'license': 'LGPL-3',
     'depends': ['base', 'mail', 'account'],
     'data': [
-        'security/ir.model.access.csv',
         'security/clinic_security.xml',
+        'security/ir.model.access.csv',
         'data/clinic_specialty_data.xml',
         'data/clinic_icd10_data.xml',
         'views/clinic_specialty_views.xml',
         'views/clinic_icd10_views.xml',
         'views/clinic_config_views.xml',
+        'views/clinic_dashboard_views.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'clinic_core/static/src/dashboard/**/*',
+        ],
+    },
     'demo': ['demo/clinic_core_demo.xml'],
     'installable': True,
     'application': True,

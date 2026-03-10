@@ -22,7 +22,7 @@
                     <notebook>
                         <page string="Plans">
                             <field name="plan_ids">
-                                <list editable="bottom">
+                                <tree editable="bottom">
                                     <field name="name"/>
                                     <field name="plan_code"/>
                                     <field name="coverage_type"/>
@@ -30,7 +30,7 @@
                                     <field name="copay"/>
                                     <field name="coinsurance"/>
                                     <field name="active"/>
-                                </list>
+                                </tree>
                             </field>
                         </page>
                         <page string="Notes"><field name="notes"/></page>
@@ -44,19 +44,19 @@
         <field name="name">clinic.insurer.list</field>
         <field name="model">clinic.insurer</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="payer_id"/>
                 <field name="phone"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_insurer" model="ir.actions.act_window">
         <field name="name">Insurers</field>
         <field name="res_model">clinic.insurer</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

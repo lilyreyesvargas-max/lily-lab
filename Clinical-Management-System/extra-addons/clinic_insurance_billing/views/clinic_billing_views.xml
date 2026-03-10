@@ -33,7 +33,7 @@
         <field name="name">clinic.coverage.rule.list</field>
         <field name="model">clinic.coverage.rule</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="insurer_id"/>
                 <field name="plan_id"/>
@@ -42,14 +42,14 @@
                 <field name="patient_copay"/>
                 <field name="requires_auth"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_coverage_rule" model="ir.actions.act_window">
         <field name="name">Coverage Rules</field>
         <field name="res_model">clinic.coverage.rule</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Billing Claim -->
@@ -93,7 +93,7 @@
                         </group>
                     </group>
                     <field name="line_ids">
-                        <list editable="bottom">
+                        <tree editable="bottom">
                             <field name="service_code"/>
                             <field name="description"/>
                             <field name="quantity"/>
@@ -103,7 +103,7 @@
                             <field name="insurer_amount" readonly="1"/>
                             <field name="patient_amount" readonly="1"/>
                             <field name="icd10_id"/>
-                        </list>
+                        </tree>
                     </field>
                     <group string="Notes"><field name="notes" nolabel="1"/></group>
                 </sheet>
@@ -119,7 +119,7 @@
         <field name="name">clinic.billing.claim.list</field>
         <field name="model">clinic.billing.claim</field>
         <field name="arch" type="xml">
-            <list decoration-danger="state == 'denied'" decoration-success="state == 'paid'">
+            <tree decoration-danger="state == 'denied'" decoration-success="state == 'paid'">
                 <field name="name"/>
                 <field name="patient_id"/>
                 <field name="service_date"/>
@@ -127,14 +127,14 @@
                 <field name="insurer_amount"/>
                 <field name="patient_amount"/>
                 <field name="state"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_billing_claim" model="ir.actions.act_window">
         <field name="name">Claims</field>
         <field name="res_model">clinic.billing.claim</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Remittance -->
@@ -157,7 +157,7 @@
                         </group>
                     </group>
                     <field name="line_ids">
-                        <list editable="bottom">
+                        <tree editable="bottom">
                             <field name="claim_id"/>
                             <field name="claim_ref"/>
                             <field name="patient_name"/>
@@ -165,7 +165,7 @@
                             <field name="paid_amount"/>
                             <field name="adjustment_reason"/>
                             <field name="status"/>
-                        </list>
+                        </tree>
                     </field>
                     <group string="Notes"><field name="notes" nolabel="1"/></group>
                 </sheet>
@@ -177,20 +177,20 @@
         <field name="name">clinic.remittance.list</field>
         <field name="model">clinic.remittance</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="insurer_id"/>
                 <field name="payment_date"/>
                 <field name="check_eft_number"/>
                 <field name="total_paid"/>
                 <field name="state"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_remittance" model="ir.actions.act_window">
         <field name="name">Remittances</field>
         <field name="res_model">clinic.remittance</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

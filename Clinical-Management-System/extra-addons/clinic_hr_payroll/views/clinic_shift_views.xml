@@ -30,20 +30,20 @@
         <field name="name">clinic.shift.list</field>
         <field name="model">clinic.shift</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="company_id"/>
                 <field name="hour_from"/>
                 <field name="hour_to"/>
                 <field name="duration"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_shift" model="ir.actions.act_window">
         <field name="name">Shifts</field>
         <field name="res_model">clinic.shift</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

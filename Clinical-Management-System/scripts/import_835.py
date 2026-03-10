@@ -117,15 +117,52 @@ def main():
                 # Check if clinic.remittance model exists
                 models.execute_kw(args.db, uid, args.password, "clinic.remittance",
                                   "search", [[]], {"limit": 1})
-                rem_id = models.execute_kw(args.db, uid, args.password, "clinic.remittance", "create", [{
+
+                # Lookup insurer by name
+                insurer_id = False
+                if era["payer_name"]:
+                    insurers = models.execute_kw(
+                        args.db, uid, args.password, "clinic.insurer", "search",
+                        [['|', ('name', 'ilike', era["payer_name"]),
+                               ('code', '=ilike', era["payer_name"])]],
+                        {"limit": 1},
+                    )
+                    if insurers:
+                        insurer_id = insurers[0]
+
+                payment_date = (
+                    era["payment_date"][:4] + "-" + era["payment_date"][4:6] + "-" + era["payment_date"][6:8]
+                    if len(era["payment_date"]) == 8 else datetime.today().isoformat()[:10]
+                )
+                rem_vals = {
                     "name": era["check_number"] or f"ERA-{era['control_number']}",
-                    "payment_date": era["payment_date"][:4] + "-" + era["payment_date"][4:6] + "-" + era["payment_date"][6:8]
-                    if len(era["payment_date"]) == 8 else datetime.today().isoformat()[:10],
+                    "payment_date": payment_date,
                     "check_eft_number": era["check_number"],
                     "total_paid": era["total_paid"],
                     "state": "pending",
-                }])
-                print(f"  → Created clinic.remittance id={rem_id}")
+                }
+                if insurer_id:
+                    rem_vals["insurer_id"] = insurer_id
+
+                rem_id = models.execute_kw(args.db, uid, args.password,
+                                           "clinic.remittance", "create", [rem_vals])
+                print(f"  → Created clinic.remittance id={rem_id}"
+                      f" (insurer={'id=' + str(insurer_id) if insurer_id else 'NOT FOUND'})")
+
+                # Log EDI transaction
+                try:
+                    txn_id = models.execute_kw(args.db, uid, args.password,
+                        "clinic.edi.transaction", "create", [{
+                            "transaction_type": "835",
+                            "direction": "inbound",
+                            "content": content,
+                            "control_number": era["control_number"],
+                            "state": "processed",
+                        }])
+                    print(f"  → EDI transaction id={txn_id} [processed]")
+                except Exception as e:
+                    print(f"  → EDI transaction log skipped: {e}")
+
             except Exception as e:
                 print(f"  → Odoo import skipped: {e}")
 

@@ -47,19 +47,19 @@
         <field name="name">clinic.edi.config.list</field>
         <field name="model">clinic.edi.config</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="clearinghouse_name"/>
                 <field name="transport_type"/>
                 <field name="is_sandbox"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_edi_config" model="ir.actions.act_window">
         <field name="name">EDI Configuration</field>
         <field name="res_model">clinic.edi.config</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

@@ -32,8 +32,8 @@ services:
       PASSWORD: ${POSTGRES_PASSWORD}
       TZ: ${TZ}
     ports:
-      - "8069:8069"
-      - "8072:8072"
+      - "8070:8069"
+      - "8073:8072"
     volumes:
       - ./odoo.conf:/etc/odoo/odoo.conf
       - ./extra-addons:/mnt/extra-addons

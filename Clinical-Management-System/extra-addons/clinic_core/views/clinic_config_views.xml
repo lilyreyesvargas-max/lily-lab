@@ -26,17 +26,17 @@
         <field name="name">clinic.config.list</field>
         <field name="model">clinic.config</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="name"/>
                 <field name="clinic_code"/>
                 <field name="company_id"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_config" model="ir.actions.act_window">
         <field name="name">Clinic Configuration</field>
         <field name="res_model">clinic.config</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

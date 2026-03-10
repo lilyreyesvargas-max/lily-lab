@@ -8,6 +8,7 @@ access_clinic_patient_doctor,clinic.patient doctor,model_clinic_patient,clinic_c
 access_clinic_patient_nurse,clinic.patient nurse,model_clinic_patient,clinic_core.clinic_group_nurse,1,1,0,0
 access_clinic_patient_receptionist,clinic.patient receptionist,model_clinic_patient,clinic_core.clinic_group_receptionist,1,1,1,0
 access_clinic_patient_billing,clinic.patient billing,model_clinic_patient,clinic_core.clinic_group_billing,1,0,0,0
+access_clinic_patient_user,clinic.patient user,model_clinic_patient,base.group_user,1,0,0,0
 access_clinic_patient_policy_admin,clinic.patient.policy admin,model_clinic_patient_policy,clinic_core.clinic_group_admin,1,1,1,1
 access_clinic_patient_policy_user,clinic.patient.policy user,model_clinic_patient_policy,base.group_user,1,0,0,0
 access_clinic_patient_consent_admin,clinic.patient.consent admin,model_clinic_patient_consent,clinic_core.clinic_group_admin,1,1,1,1

@@ -41,20 +41,20 @@
         <field name="name">clinic.edi.eligibility.request.list</field>
         <field name="model">clinic.edi.eligibility.request</field>
         <field name="arch" type="xml">
-            <list decoration-success="eligible == True" decoration-danger="eligible == False and state == 'processed'">
+            <tree decoration-success="eligible == True" decoration-danger="eligible == False and state == 'processed'">
                 <field name="patient_id"/>
                 <field name="insurer_id"/>
                 <field name="request_date"/>
                 <field name="eligible"/>
                 <field name="plan_name"/>
                 <field name="state"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_edi_eligibility" model="ir.actions.act_window">
         <field name="name">Eligibility Requests</field>
         <field name="res_model">clinic.edi.eligibility.request</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

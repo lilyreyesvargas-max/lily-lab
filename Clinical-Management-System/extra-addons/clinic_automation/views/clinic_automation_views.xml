@@ -5,7 +5,7 @@
         <field name="name">clinic.automation.log.list</field>
         <field name="model">clinic.automation.log</field>
         <field name="arch" type="xml">
-            <list decoration-danger="result == 'error'" decoration-warning="result == 'warning'">
+            <tree decoration-danger="result == 'error'" decoration-warning="result == 'warning'">
                 <field name="create_date"/>
                 <field name="job_type"/>
                 <field name="company_id"/>
@@ -13,7 +13,7 @@
                 <field name="records_processed"/>
                 <field name="duration_ms"/>
                 <field name="message"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -44,7 +44,7 @@
     <record id="action_clinic_automation_log" model="ir.actions.act_window">
         <field name="name">Automation Logs</field>
         <field name="res_model">clinic.automation.log</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 
     <!-- Automation Config -->
@@ -60,15 +60,15 @@
                     </group>
                     <group string="Appointment Reminders">
                         <field name="reminder_enabled"/>
-                        <field name="reminder_hours_before" attrs="{'invisible': [('reminder_enabled', '=', False)]}"/>
+                        <field name="reminder_hours_before" invisible="not reminder_enabled"/>
                     </group>
                     <group string="Stock Alerts">
                         <field name="stock_alert_enabled"/>
-                        <field name="stock_min_qty" attrs="{'invisible': [('stock_alert_enabled', '=', False)]}"/>
+                        <field name="stock_min_qty" invisible="not stock_alert_enabled"/>
                     </group>
                     <group string="Expiry Alerts">
                         <field name="expiry_alert_enabled"/>
-                        <field name="expiry_days_warning" attrs="{'invisible': [('expiry_alert_enabled', '=', False)]}"/>
+                        <field name="expiry_days_warning" invisible="not expiry_alert_enabled"/>
                     </group>
                     <group string="EDI Jobs">
                         <field name="edi_auto_send"/>
@@ -83,7 +83,7 @@
         <field name="name">clinic.automation.config.list</field>
         <field name="model">clinic.automation.config</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="company_id"/>
                 <field name="active"/>
                 <field name="reminder_enabled"/>
@@ -91,13 +91,13 @@
                 <field name="expiry_alert_enabled"/>
                 <field name="edi_auto_send"/>
                 <field name="edi_auto_import"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_automation_config" model="ir.actions.act_window">
         <field name="name">Automation Config</field>
         <field name="res_model">clinic.automation.config</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

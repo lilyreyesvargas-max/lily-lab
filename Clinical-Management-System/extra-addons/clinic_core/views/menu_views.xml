@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Root Menu -->
-    <menuitem id="menu_clinic_root" name="Clinic" sequence="50" web_icon="clinic_core,static/description/icon.png"/>
+    <menuitem id="menu_clinic_root" name="Clinic" sequence="50"
+              web_icon="clinic_core,static/description/icon.png"
+              action="action_clinic_dashboard"/>
 
     <!-- Configuration Menu -->
     <menuitem id="menu_clinic_config" name="Configuration" parent="menu_clinic_root" sequence="100"/>

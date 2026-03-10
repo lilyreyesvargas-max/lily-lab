@@ -23,18 +23,18 @@
         <field name="name">clinic.specialty.list</field>
         <field name="model">clinic.specialty</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
                 <field name="active"/>
-            </list>
+            </tree>
         </field>
     </record>
 
     <record id="action_clinic_specialty" model="ir.actions.act_window">
         <field name="name">Specialties</field>
         <field name="res_model">clinic.specialty</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

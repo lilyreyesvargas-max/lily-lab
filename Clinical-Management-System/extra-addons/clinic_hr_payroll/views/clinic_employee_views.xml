@@ -28,7 +28,7 @@
     <record id="action_clinic_employees" model="ir.actions.act_window">
         <field name="name">Clinical Staff</field>
         <field name="res_model">hr.employee</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="domain">[('clinic_role','!=',False)]</field>
     </record>
 </odoo>

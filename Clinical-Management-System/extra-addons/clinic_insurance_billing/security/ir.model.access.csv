@@ -5,6 +5,7 @@ access_clinic_coverage_rule_user,clinic.coverage.rule user,model_clinic_coverage
 access_clinic_billing_claim_admin,clinic.billing.claim admin,model_clinic_billing_claim,clinic_core.clinic_group_admin,1,1,1,1
 access_clinic_billing_claim_billing,clinic.billing.claim billing,model_clinic_billing_claim,clinic_core.clinic_group_billing,1,1,1,0
 access_clinic_billing_claim_doctor,clinic.billing.claim doctor,model_clinic_billing_claim,clinic_core.clinic_group_doctor,1,0,0,0
+access_clinic_billing_claim_user,clinic.billing.claim user,model_clinic_billing_claim,base.group_user,1,0,0,0
 access_clinic_billing_claim_line_admin,clinic.billing.claim.line admin,model_clinic_billing_claim_line,clinic_core.clinic_group_admin,1,1,1,1
 access_clinic_billing_claim_line_billing,clinic.billing.claim.line billing,model_clinic_billing_claim_line,clinic_core.clinic_group_billing,1,1,1,1
 access_clinic_billing_claim_line_user,clinic.billing.claim.line user,model_clinic_billing_claim_line,base.group_user,1,0,0,0
