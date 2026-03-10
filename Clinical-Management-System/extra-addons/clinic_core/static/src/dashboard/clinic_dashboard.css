@@ -1,0 +1,65 @@
+/* =========================================================
+   Clinic Dashboard — OWL Component Styles
+   Odoo 17 / Bootstrap 5
+   ========================================================= */
+
+/* ─── KPI Cards ─────────────────────────────────────────── */
+
+.clinic-kpi-card {
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    border-width: 2px !important;
+}
+
+.clinic-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.5rem 1.2rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.clinic-kpi-card .card-body {
+    padding: 1.25rem 1rem;
+}
+
+.clinic-kpi-card h2 {
+    font-size: 2rem;
+    line-height: 1.1;
+}
+
+/* ─── Role Badge ─────────────────────────────────────────── */
+
+.clinic-role-badge {
+    font-size: 0.85rem !important;
+    padding: 0.45em 0.9em;
+    border-radius: 0.5rem;
+    letter-spacing: 0.03em;
+}
+
+.clinic-role-admin        { background-color: #0d6efd; color: #fff; }
+.clinic-role-doctor       { background-color: #198754; color: #fff; }
+.clinic-role-nurse        { background-color: #0dcaf0; color: #000; }
+.clinic-role-receptionist { background-color: #6f42c1; color: #fff; }
+.clinic-role-billing      { background-color: #fd7e14; color: #fff; }
+
+/* ─── Chart Cards ────────────────────────────────────────── */
+
+.clinic-chart-card {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+}
+
+.clinic-chart-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+}
+
+.clinic-chart-card .card-body {
+    padding: 1rem;
+    min-height: 320px;
+}
+
+.clinic-chart-card canvas {
+    display: block;
+    max-width: 100%;
+}
