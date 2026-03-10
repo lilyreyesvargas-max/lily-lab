@@ -1,6 +1,7 @@
-from odoo.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase, tagged
 
 
+@tagged('post_install', '-at_install')
 class TestClinicEhr(TransactionCase):
 
     def setUp(self):
@@ -32,3 +33,51 @@ class TestClinicEhr(TransactionCase):
             'encounter_id': enc.id, 'icd10_id': icd.id, 'diagnosis_type': 'primary'
         })
         self.assertIn(diag, enc.diagnosis_ids)
+
+    # ── Record-Level Security (multi-company isolation) ──────────────────────
+
+    def _make_rls_context(self):
+        """Create two companies, a doctor bound to S1, and base patients."""
+        company_s1 = self.env['res.company'].create({'name': 'EHR Branch S1'})
+        company_s2 = self.env['res.company'].create({'name': 'EHR Branch S2'})
+        doctor_group = self.env.ref('clinic_core.clinic_group_doctor')
+        doctor_s1 = self.env['res.users'].create({
+            'name': 'EHR Doctor S1',
+            'login': 'ehr_doc_s1@test.com',
+            'company_id': company_s1.id,
+            'company_ids': [(4, company_s1.id)],
+            'groups_id': [(4, doctor_group.id)],
+        })
+        patient_s1 = self.env['clinic.patient'].sudo().create(
+            {'name': 'EHR S1 Patient', 'company_id': company_s1.id}
+        )
+        patient_s2 = self.env['clinic.patient'].sudo().create(
+            {'name': 'EHR S2 Patient', 'company_id': company_s2.id}
+        )
+        return company_s1, company_s2, doctor_s1, patient_s1, patient_s2
+
+    def test_doctor_cannot_see_other_company_encounter(self):
+        """RLS: doctor at S1 must not see encounters belonging to S2."""
+        company_s1, company_s2, doctor_s1, patient_s1, patient_s2 = (
+            self._make_rls_context()
+        )
+        self.env['clinic.ehr.encounter'].sudo().create({
+            'patient_id': patient_s2.id, 'company_id': company_s2.id
+        })
+        visible = self.env['clinic.ehr.encounter'].with_user(doctor_s1).search([])
+        for enc in visible:
+            self.assertNotEqual(
+                enc.company_id.id, company_s2.id,
+                "Doctor S1 must not see encounters from Branch S2"
+            )
+
+    def test_doctor_can_see_own_company_encounter(self):
+        """RLS: doctor at S1 must see encounters belonging to S1."""
+        company_s1, company_s2, doctor_s1, patient_s1, patient_s2 = (
+            self._make_rls_context()
+        )
+        enc_s1 = self.env['clinic.ehr.encounter'].sudo().create({
+            'patient_id': patient_s1.id, 'company_id': company_s1.id
+        })
+        visible = self.env['clinic.ehr.encounter'].with_user(doctor_s1).search([])
+        self.assertIn(enc_s1, visible, "Doctor S1 must see encounters from Branch S1")

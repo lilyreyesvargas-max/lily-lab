@@ -1,6 +1,7 @@
-from odoo.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase, tagged
 
 
+@tagged('post_install', '-at_install')
 class TestClinicEdiUs(TransactionCase):
 
     def test_837_generation(self):
@@ -76,3 +77,46 @@ IEA*1*000000001~"""
         tx.action_validate()
         self.assertEqual(tx.state, 'error')
         self.assertIn('Missing ISA', tx.validation_errors)
+
+    # ── Record-Level Security (multi-company isolation) ──────────────────────
+
+    def _make_rls_context(self):
+        company_s1 = self.env['res.company'].create({'name': 'EDI Branch S1'})
+        company_s2 = self.env['res.company'].create({'name': 'EDI Branch S2'})
+        billing_group = self.env.ref('clinic_core.clinic_group_billing')
+        billing_user_s1 = self.env['res.users'].create({
+            'name': 'EDI Billing S1',
+            'login': 'edi_billing_s1@test.com',
+            'company_id': company_s1.id,
+            'company_ids': [(4, company_s1.id)],
+            'groups_id': [(4, billing_group.id)],
+        })
+        return company_s1, company_s2, billing_user_s1
+
+    def test_edi_user_cannot_see_other_company_transaction(self):
+        """RLS: billing user at S1 must not see EDI transactions from S2."""
+        company_s1, company_s2, billing_user_s1 = self._make_rls_context()
+        self.env['clinic.edi.transaction'].sudo().create({
+            'transaction_type': '837',
+            'direction': 'outbound',
+            'company_id': company_s2.id,
+            'content': 'ISA~',
+        })
+        visible = self.env['clinic.edi.transaction'].with_user(billing_user_s1).search([])
+        for tx in visible:
+            self.assertNotEqual(
+                tx.company_id.id, company_s2.id,
+                "Billing user S1 must not see EDI transactions from Branch S2"
+            )
+
+    def test_edi_user_can_see_own_company_transaction(self):
+        """RLS: billing user at S1 must see EDI transactions from S1."""
+        company_s1, company_s2, billing_user_s1 = self._make_rls_context()
+        tx_s1 = self.env['clinic.edi.transaction'].sudo().create({
+            'transaction_type': '837',
+            'direction': 'outbound',
+            'company_id': company_s1.id,
+            'content': 'ISA~',
+        })
+        visible = self.env['clinic.edi.transaction'].with_user(billing_user_s1).search([])
+        self.assertIn(tx_s1, visible, "Billing user S1 must see EDI transactions from Branch S1")

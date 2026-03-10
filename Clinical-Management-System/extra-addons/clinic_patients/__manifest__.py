@@ -8,6 +8,7 @@
     'depends': ['clinic_core'],
     'data': [
         'security/ir.model.access.csv',
+        'security/record_rules.xml',
         'data/clinic_patient_sequence.xml',
         'views/clinic_patient_views.xml',
         'views/clinic_insurer_views.xml',

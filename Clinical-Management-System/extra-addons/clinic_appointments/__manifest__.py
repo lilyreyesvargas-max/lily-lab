@@ -8,6 +8,7 @@
     'depends': ['clinic_patients'],
     'data': [
         'security/ir.model.access.csv',
+        'security/record_rules.xml',
         'data/clinic_appointment_sequence.xml',
         'views/clinic_appointment_views.xml',
         'views/menu_views.xml',

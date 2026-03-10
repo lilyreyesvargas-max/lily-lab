@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class ClinicAppointment(models.Model):
@@ -45,6 +46,25 @@ class ClinicAppointment(models.Model):
         }
         for rec in self:
             rec.color = colors.get(rec.state, 0)
+
+    @api.constrains('physician_id', 'appointment_date', 'date_end')
+    def _check_physician_overlap(self):
+        """Prevent double-booking: same physician cannot have two overlapping active appointments."""
+        for record in self:
+            if not record.physician_id or not record.appointment_date:
+                continue
+            overlap = self.search([
+                ('id', '!=', record.id),
+                ('physician_id', '=', record.physician_id.id),
+                ('state', 'not in', ['cancelled', 'no_show']),
+                ('appointment_date', '<', record.date_end),
+                ('date_end', '>', record.appointment_date),
+            ])
+            if overlap:
+                raise ValidationError(
+                    f"Dr. {record.physician_id.name} already has an appointment "
+                    f"overlapping {record.appointment_date}."
+                )
 
     @api.model_create_multi
     def create(self, vals_list):

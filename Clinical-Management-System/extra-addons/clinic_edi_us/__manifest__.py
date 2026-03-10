@@ -8,6 +8,7 @@
     'depends': ['clinic_insurance_billing'],
     'data': [
         'security/ir.model.access.csv',
+        'security/record_rules.xml',
         'data/clinic_edi_config_data.xml',
         'data/clinic_edi_sequence.xml',
         'views/clinic_edi_transaction_views.xml',

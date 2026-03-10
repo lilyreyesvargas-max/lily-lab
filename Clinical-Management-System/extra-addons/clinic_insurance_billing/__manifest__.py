@@ -8,6 +8,7 @@
     'depends': ['clinic_patients', 'account'],
     'data': [
         'security/ir.model.access.csv',
+        'security/record_rules.xml',
         'data/clinic_billing_sequence.xml',
         'views/clinic_billing_views.xml',
         'views/menu_views.xml',

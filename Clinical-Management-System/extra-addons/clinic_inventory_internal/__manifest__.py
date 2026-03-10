@@ -8,6 +8,7 @@
     'depends': ['clinic_core', 'stock'],
     'data': [
         'security/ir.model.access.csv',
+        'security/record_rules.xml',
         'data/clinic_supply_sequence.xml',
         'views/clinic_supply_request_views.xml',
         'views/menu_views.xml',
