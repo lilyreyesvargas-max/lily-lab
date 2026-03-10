@@ -55,11 +55,24 @@
         </field>
     </record>
 
+    <!-- ── clinic_role required when opened from Clinical Staff menu ─────── -->
+    <record id="view_clinic_employee_form_role_required" model="ir.ui.view">
+        <field name="name">hr.employee.form.clinic.role.required</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='clinic_role']" position="attributes">
+                <attribute name="required">context.get('from_clinic_hr')</attribute>
+            </xpath>
+        </field>
+    </record>
+
     <!-- ── Clinical Staff action ─────────────────────────────────────────── -->
     <record id="action_clinic_employees" model="ir.actions.act_window">
         <field name="name">Clinical Staff</field>
         <field name="res_model">hr.employee</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('clinic_role','!=',False)]</field>
+        <field name="context">{'from_clinic_hr': True}</field>
     </record>
 </odoo>
