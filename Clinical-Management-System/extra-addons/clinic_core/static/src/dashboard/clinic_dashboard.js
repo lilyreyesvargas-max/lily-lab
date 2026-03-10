@@ -212,6 +212,11 @@ export class ClinicDashboard extends Component {
         try { s.kpi3 = await this.orm.searchCount("clinic.billing.claim", [["state", "=", "draft"]]); } catch { s.kpi3 = 0; }
         try { s.kpi4 = await this.orm.searchCount("clinic.remittance", [["state", "=", "pending"]]); } catch { s.kpi4 = 0; }
 
+        this._clickA = () => this.openAppointments();
+        this._clickB = () => this.openClaims();
+        this._clickC = () => this.openRemittances();
+        this._clickD = () => this.openEdi();
+
         // Chart A: Appointments by state (bar)
         s.chartATitle = "Appointments by State";
         s.chartAType  = "bar";
@@ -324,6 +329,11 @@ export class ClinicDashboard extends Component {
         try {
             s.kpi4 = await this.orm.searchCount("clinic.stock.item", [["qty_available", "<", 1]]);
         } catch { s.kpi4 = 0; }
+
+        this._clickA = () => this.openAppointments();
+        this._clickB = () => this.openAppointments();
+        this._clickC = () => this.openEncounters();
+        this._clickD = () => this.openPatients();
 
         // Chart A: My appointments by day — last 7 days (bar)
         s.chartATitle  = "My Appointments (Last 7 Days)";
@@ -448,6 +458,11 @@ export class ClinicDashboard extends Component {
                 ["date_appointment", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi4 = 0; }
+
+        this._clickA = () => this.openStock();
+        this._clickB = () => this.openEncounters();
+        this._clickC = () => this.openSupplyRequests();
+        this._clickD = () => this.openAppointments();
 
         // Chart A: Stock alerts by category (bar) — stock.quant qty <= 5, grouped by product categ
         s.chartATitle = "Stock Alerts by Category";
@@ -583,6 +598,11 @@ export class ClinicDashboard extends Component {
             ]);
         } catch { s.kpi4 = 0; }
 
+        this._clickA = () => this.openAppointments();
+        this._clickB = () => this.openAppointments();
+        this._clickC = () => this.openPatients();
+        this._clickD = () => this.openAppointments();
+
         // Chart A: Appointments next 7 days per day (bar)
         s.chartATitle = "Appointments — Next 7 Days";
         s.chartAType  = "bar";
@@ -712,6 +732,11 @@ export class ClinicDashboard extends Component {
         } catch { s.kpi3 = 0; }
         try { s.kpi4 = await this.orm.searchCount("clinic.billing.claim", [["state", "=", "rejected"]]); } catch { s.kpi4 = 0; }
 
+        this._clickA = () => this.openClaims();
+        this._clickB = () => this.openRemittances();
+        this._clickC = () => this.openEdi();
+        this._clickD = () => this.openClaims();
+
         // Chart A: Claims by state (doughnut)
         s.chartATitle = "Claims by State";
         s.chartAType  = "doughnut";
@@ -816,6 +841,7 @@ export class ClinicDashboard extends Component {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: () => this._clickA?.(),
                     plugins: {
                         legend: { display: s.chartAType === "doughnut" },
                     },
@@ -842,6 +868,7 @@ export class ClinicDashboard extends Component {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: () => this._clickB?.(),
                     plugins: {
                         legend: { display: true },
                     },
@@ -868,6 +895,7 @@ export class ClinicDashboard extends Component {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: () => this._clickC?.(),
                     plugins: {
                         legend: { display: s.chartCType === "doughnut" },
                     },
@@ -894,6 +922,7 @@ export class ClinicDashboard extends Component {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: () => this._clickD?.(),
                     plugins: {
                         legend: { display: true },
                     },
@@ -907,12 +936,14 @@ export class ClinicDashboard extends Component {
 
     // ------------------------------------------------------------------ navigation helpers
 
-    openPatients()      { try { this.action.doAction("clinic_patients.action_clinic_patient"); }       catch {} }
-    openAppointments()  { try { this.action.doAction("clinic_appointments.action_clinic_appointment"); } catch {} }
-    openClaims()        { try { this.action.doAction("clinic_insurance_billing.action_clinic_billing_claim"); } catch {} }
-    openRemittances()   { try { this.action.doAction("clinic_insurance_billing.action_clinic_remittance"); }   catch {} }
-    openEncounters()    { try { this.action.doAction("clinic_encounters.action_clinic_encounter"); }   catch {} }
-    openStock()         { try { this.action.doAction("clinic_inventory.action_clinic_stock_item"); }   catch {} }
+    openPatients()        { try { this.action.doAction("clinic_patients.action_clinic_patient"); }                          catch {} }
+    openAppointments()    { try { this.action.doAction("clinic_appointments.action_clinic_appointment"); }                  catch {} }
+    openClaims()          { try { this.action.doAction("clinic_insurance_billing.action_clinic_billing_claim"); }           catch {} }
+    openRemittances()     { try { this.action.doAction("clinic_insurance_billing.action_clinic_remittance"); }              catch {} }
+    openEncounters()      { try { this.action.doAction("clinic_encounters.action_clinic_encounter"); }                      catch {} }
+    openStock()           { try { this.action.doAction("clinic_inventory.action_clinic_stock_item"); }                      catch {} }
+    openEdi()             { try { this.action.doAction("clinic_edi.action_clinic_edi_transaction"); }                       catch {} }
+    openSupplyRequests()  { try { this.action.doAction("clinic_inventory.action_clinic_supply_request"); }                  catch {} }
 
     // ------------------------------------------------------------------ KPI click dispatchers
     // Each KPI slot maps to the most relevant action for the current role.
