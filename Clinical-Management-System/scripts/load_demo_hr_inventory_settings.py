@@ -165,6 +165,24 @@ def load_hr_shifts(models, db, uid, pwd):
 
 # ─── 3. HR — EMPLOYEES ───────────────────────────────────────────────────────
 
+def _create_or_get_user(models, db, uid, pwd, name, login, password="Clinic2026!"):
+    """Create a res.users record if it does not exist, return user id."""
+    existing = models.execute_kw(db, uid, pwd, "res.users", "search",
+        [[("login", "=", login)]], {"limit": 1})
+    if existing:
+        return existing[0]
+    group_user_id = get_ref(models, db, uid, pwd, "base.group_user")
+    user_vals = {
+        "name": name,
+        "login": login,
+        "email": login,
+        "password": password,
+    }
+    if group_user_id:
+        user_vals["groups_id"] = [[4, group_user_id]]
+    return models.execute_kw(db, uid, pwd, "res.users", "create", [user_vals])
+
+
 def load_hr_employees(models, db, uid, pwd):
     print("\n=== HR — EMPLOYEES ===")
 
@@ -188,74 +206,87 @@ def load_hr_employees(models, db, uid, pwd):
             {"name": dept_name})
         departments[dept_name] = did
 
+    # Get or create hr.job positions required by clinic staff
+    job_positions = {}
+    for job_name in [
+        "General Physician", "Gynecologist", "Ophthalmologist", "Dentist",
+        "Registered Nurse", "Receptionist", "HR Administrator", "Billing Administrator",
+    ]:
+        jid = search_or_create(models, db, uid, pwd,
+            "hr.job",
+            [("name", "=", job_name)],
+            {"name": job_name})
+        job_positions[job_name] = jid
+    print(f"  [OK] {len(job_positions)} hr.job positions ready")
+
     employees = [
         # Doctors — Main HQ
         {"name": "Dr. Carlos Mendoza",   "role": "doctor",       "specialty": "Medicina General",
          "license": "MD-001-NY", "company": "Main Clinic HQ",    "dept": "Medical",
-         "job": "General Physician",     "email": "c.mendoza@clinic.local"},
+         "job": "General Physician",     "email": "c.mendoza@clinic.local",    "badge": "BADGE-0001"},
         {"name": "Dr. Ana Gutiérrez",    "role": "doctor",       "specialty": "Ginecología",
          "license": "MD-002-NY", "company": "Main Clinic HQ",    "dept": "Medical",
-         "job": "Gynecologist",          "email": "a.gutierrez@clinic.local"},
+         "job": "Gynecologist",          "email": "a.gutierrez@clinic.local",  "badge": "BADGE-0002"},
         {"name": "Dr. Roberto Silva",    "role": "doctor",       "specialty": "Oftalmología",
          "license": "MD-003-NY", "company": "Main Clinic HQ",    "dept": "Medical",
-         "job": "Ophthalmologist",       "email": "r.silva@clinic.local"},
+         "job": "Ophthalmologist",       "email": "r.silva@clinic.local",      "badge": "BADGE-0003"},
         {"name": "Dr. María Torres",     "role": "doctor",       "specialty": "Estomatología",
          "license": "MD-004-NY", "company": "Main Clinic HQ",    "dept": "Medical",
-         "job": "Dentist",               "email": "m.torres@clinic.local"},
+         "job": "Dentist",               "email": "m.torres@clinic.local",     "badge": "BADGE-0004"},
         # Doctors — Branch S1
         {"name": "Dr. Luis Ramírez",     "role": "doctor",       "specialty": "Medicina General",
          "license": "MD-005-NY", "company": "Clinic Branch S1",  "dept": "Medical",
-         "job": "General Physician",     "email": "l.ramirez@clinic.local"},
+         "job": "General Physician",     "email": "l.ramirez@clinic.local",    "badge": "BADGE-0005"},
         {"name": "Dr. Sofía Castro",     "role": "doctor",       "specialty": "Ginecología",
          "license": "MD-006-NY", "company": "Clinic Branch S1",  "dept": "Medical",
-         "job": "Gynecologist",          "email": "s.castro@clinic.local"},
+         "job": "Gynecologist",          "email": "s.castro@clinic.local",     "badge": "BADGE-0006"},
         # Doctors — Branch S2
         {"name": "Dr. Juan Morales",     "role": "doctor",       "specialty": "Oftalmología",
          "license": "MD-007-NY", "company": "Clinic Branch S2",  "dept": "Medical",
-         "job": "Ophthalmologist",       "email": "j.morales@clinic.local"},
+         "job": "Ophthalmologist",       "email": "j.morales@clinic.local",    "badge": "BADGE-0007"},
         {"name": "Dr. Elena Vega",       "role": "doctor",       "specialty": "Estomatología",
          "license": "MD-008-NY", "company": "Clinic Branch S2",  "dept": "Medical",
-         "job": "Dentist",               "email": "e.vega@clinic.local"},
+         "job": "Dentist",               "email": "e.vega@clinic.local",       "badge": "BADGE-0008"},
         # Doctors — Branch S3
         {"name": "Dr. Pedro Flores",     "role": "doctor",       "specialty": "Medicina General",
          "license": "MD-009-NY", "company": "Clinic Branch S3",  "dept": "Medical",
-         "job": "General Physician",     "email": "p.flores@clinic.local"},
+         "job": "General Physician",     "email": "p.flores@clinic.local",     "badge": "BADGE-0009"},
         {"name": "Dr. Carmen Ruiz",      "role": "doctor",       "specialty": "Estomatología",
          "license": "MD-010-NY", "company": "Clinic Branch S3",  "dept": "Medical",
-         "job": "Dentist",               "email": "c.ruiz@clinic.local"},
+         "job": "Dentist",               "email": "c.ruiz@clinic.local",       "badge": "BADGE-0010"},
         # Nurses
         {"name": "Enf. Patricia López",  "role": "nurse",        "specialty": "Medicina General",
          "license": "RN-001-NY", "company": "Main Clinic HQ",    "dept": "Nursing",
-         "job": "Registered Nurse",      "email": "p.lopez@clinic.local"},
+         "job": "Registered Nurse",      "email": "p.lopez@clinic.local",      "badge": "BADGE-0011"},
         {"name": "Enf. Diego Hernández", "role": "nurse",        "specialty": "Ginecología",
          "license": "RN-002-NY", "company": "Main Clinic HQ",    "dept": "Nursing",
-         "job": "Registered Nurse",      "email": "d.hernandez@clinic.local"},
+         "job": "Registered Nurse",      "email": "d.hernandez@clinic.local",  "badge": "BADGE-0012"},
         {"name": "Enf. Isabel Jiménez",  "role": "nurse",        "specialty": "Medicina General",
          "license": "RN-003-NY", "company": "Clinic Branch S1",  "dept": "Nursing",
-         "job": "Registered Nurse",      "email": "i.jimenez@clinic.local"},
+         "job": "Registered Nurse",      "email": "i.jimenez@clinic.local",    "badge": "BADGE-0013"},
         {"name": "Enf. Miguel Ángel García", "role": "nurse",    "specialty": "Oftalmología",
          "license": "RN-004-NY", "company": "Clinic Branch S2",  "dept": "Nursing",
-         "job": "Registered Nurse",      "email": "ma.garcia@clinic.local"},
+         "job": "Registered Nurse",      "email": "ma.garcia@clinic.local",    "badge": "BADGE-0014"},
         # Receptionists
         {"name": "Rec. Laura Martínez",  "role": "receptionist", "specialty": None,
          "license": None,        "company": "Main Clinic HQ",    "dept": "Reception",
-         "job": "Receptionist",          "email": "la.martinez@clinic.local"},
+         "job": "Receptionist",          "email": "la.martinez@clinic.local",  "badge": "BADGE-0015"},
         {"name": "Rec. Andrés Sánchez",  "role": "receptionist", "specialty": None,
          "license": None,        "company": "Clinic Branch S1",  "dept": "Reception",
-         "job": "Receptionist",          "email": "an.sanchez@clinic.local"},
+         "job": "Receptionist",          "email": "an.sanchez@clinic.local",   "badge": "BADGE-0016"},
         {"name": "Rec. Verónica Díaz",   "role": "receptionist", "specialty": None,
          "license": None,        "company": "Clinic Branch S2",  "dept": "Reception",
-         "job": "Receptionist",          "email": "ve.diaz@clinic.local"},
+         "job": "Receptionist",          "email": "ve.diaz@clinic.local",      "badge": "BADGE-0017"},
         {"name": "Rec. Fernando Reyes",  "role": "receptionist", "specialty": None,
          "license": None,        "company": "Clinic Branch S3",  "dept": "Reception",
-         "job": "Receptionist",          "email": "fe.reyes@clinic.local"},
+         "job": "Receptionist",          "email": "fe.reyes@clinic.local",     "badge": "BADGE-0018"},
         # Admin
         {"name": "Adm. Gloria Pérez",    "role": "admin",        "specialty": None,
          "license": None,        "company": "Main Clinic HQ",    "dept": "Administration",
-         "job": "HR Administrator",      "email": "gl.perez@clinic.local"},
+         "job": "HR Administrator",      "email": "gl.perez@clinic.local",     "badge": "BADGE-0019"},
         {"name": "Adm. Ricardo Vargas",  "role": "admin",        "specialty": None,
          "license": None,        "company": "Main Clinic HQ",    "dept": "Administration",
-         "job": "Billing Administrator", "email": "ri.vargas@clinic.local"},
+         "job": "Billing Administrator", "email": "ri.vargas@clinic.local",    "badge": "BADGE-0020"},
     ]
 
     expiry = (date.today() + timedelta(days=730)).isoformat()  # 2 years
@@ -268,6 +299,13 @@ def load_hr_employees(models, db, uid, pwd):
             company_id = models.execute_kw(db, uid, pwd, "res.company", "search",
                 [[]], {"limit": 1})[0]
 
+        # Create (or retrieve) the linked Odoo user for this employee
+        emp_user_id = _create_or_get_user(
+            models, db, uid, pwd,
+            name=emp["name"],
+            login=emp["email"],
+        )
+
         vals = {
             "name": emp["name"],
             "job_title": emp["job"],
@@ -275,6 +313,9 @@ def load_hr_employees(models, db, uid, pwd):
             "clinic_role": emp["role"],
             "company_id": company_id,
             "department_id": departments.get(emp["dept"]),
+            "user_id": emp_user_id,
+            "barcode": emp["badge"],
+            "job_id": job_positions.get(emp["job"]),
         }
         if emp["specialty"] and emp["specialty"] in spec_map:
             vals["specialty_id"] = spec_map[emp["specialty"]]
@@ -282,11 +323,17 @@ def load_hr_employees(models, db, uid, pwd):
             vals["license_number"] = emp["license"]
             vals["license_expiry"] = expiry
 
-        eid = search_or_create(models, db, uid, pwd,
-            "hr.employee",
-            [("name", "=", emp["name"])],
-            vals)
-        print(f"  [OK] {emp['role']:15s} {emp['name']} → id={eid}")
+        # search_or_create: if employee already exists, update with missing fields
+        existing_ids = models.execute_kw(db, uid, pwd, "hr.employee", "search",
+            [[("name", "=", emp["name"])]], {"limit": 1})
+        if existing_ids:
+            eid = existing_ids[0]
+            models.execute_kw(db, uid, pwd, "hr.employee", "write",
+                [[eid], vals])
+            print(f"  [UPDATE] {emp['role']:15s} {emp['name']} → id={eid}")
+        else:
+            eid = models.execute_kw(db, uid, pwd, "hr.employee", "create", [vals])
+            print(f"  [CREATE] {emp['role']:15s} {emp['name']} → id={eid}")
         created += 1
 
     print(f"  Total: {created} employees processed")

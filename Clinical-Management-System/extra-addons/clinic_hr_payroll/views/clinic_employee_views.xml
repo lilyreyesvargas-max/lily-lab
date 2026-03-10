@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Extend hr.employee form to add Clinic Info tab -->
+    <!-- ── Required-field attributes for clinic staff ─────────────────────── -->
+    <!-- Odoo 17: required="clinic_role" evaluates truthy when clinic_role is set -->
+    <record id="view_clinic_employee_form_required" model="ir.ui.view">
+        <field name="name">hr.employee.form.clinic.required</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <!-- job_id: make required when clinic_role is set -->
+            <xpath expr="//field[@name='job_id']" position="attributes">
+                <attribute name="required">clinic_role</attribute>
+            </xpath>
+
+            <!-- work_email: make required when clinic_role is set -->
+            <xpath expr="//field[@name='work_email']" position="attributes">
+                <attribute name="required">clinic_role</attribute>
+            </xpath>
+
+            <!-- user_id: make required when clinic_role is set -->
+            <xpath expr="//field[@name='user_id']" position="attributes">
+                <attribute name="required">clinic_role</attribute>
+            </xpath>
+
+            <!-- barcode: make required when clinic_role is set -->
+            <xpath expr="//field[@name='barcode']" position="attributes">
+                <attribute name="required">clinic_role</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ── Clinic Info tab ───────────────────────────────────────────────── -->
     <record id="view_clinic_employee_form_inherit" model="ir.ui.view">
         <field name="name">hr.employee.form.clinic</field>
         <field name="model">hr.employee</field>
@@ -24,7 +55,7 @@
         </field>
     </record>
 
-    <!-- Employees filtered by clinic role -->
+    <!-- ── Clinical Staff action ─────────────────────────────────────────── -->
     <record id="action_clinic_employees" model="ir.actions.act_window">
         <field name="name">Clinical Staff</field>
         <field name="res_model">hr.employee</field>
