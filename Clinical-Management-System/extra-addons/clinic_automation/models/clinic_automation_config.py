@@ -183,9 +183,17 @@ class ClinicAutomationConfig(models.Model):
                         ('write_date', '>=', fields.Datetime.to_string(retry_window)),
                     ])
                     for tx in failed:
+                        if tx.retry_count >= tx.max_retries:
+                            tx.write({'state': 'dead_letter'})
+                            _logger.warning(
+                                'EDI tx=%d moved to dead_letter after %d retries',
+                                tx.id, tx.retry_count)
+                            continue
                         try:
-                            _logger.info('EDI retry tx=%d (last error: %s)', tx.id,
+                            _logger.info('EDI retry tx=%d attempt %d/%d (last error: %s)',
+                                         tx.id, tx.retry_count + 1, tx.max_retries,
                                          (tx.validation_errors or '')[:80])
+                            tx.write({'retry_count': tx.retry_count + 1})
                             tx.action_send_rest()
                             retried += 1
                         except Exception as e:

@@ -7,6 +7,8 @@ class ClinicRemittance(models.Model):
     _order = 'payment_date desc'
 
     name = fields.Char(string='Remittance No.', required=True)
+    company_id = fields.Many2one('res.company', string='Company', required=True,
+                                 default=lambda self: self.env.company)
     insurer_id = fields.Many2one('clinic.insurer', string='Insurer')
     payment_date = fields.Date(string='Payment Date')
     check_eft_number = fields.Char(string='Check / EFT No.')

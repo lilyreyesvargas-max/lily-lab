@@ -39,6 +39,12 @@ services:
       - ./extra-addons:/mnt/extra-addons
       - odoo-data:/var/lib/odoo
       - ./edi:/edi
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8069/web/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
   mock-clearinghouse:

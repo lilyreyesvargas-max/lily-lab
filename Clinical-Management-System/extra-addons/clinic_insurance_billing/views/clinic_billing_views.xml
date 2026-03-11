@@ -89,7 +89,7 @@
                             <field name="total_amount" readonly="1"/>
                             <field name="insurer_amount" readonly="1"/>
                             <field name="patient_amount" readonly="1"/>
-                            <field name="encounter_ref"/>
+                            <field name="encounter_id"/>
                         </group>
                     </group>
                     <field name="line_ids">

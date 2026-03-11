@@ -1,3 +1,4 @@
+import paramiko
 from odoo import fields, models
 
 
@@ -24,6 +25,12 @@ class ClinicEdiConfig(models.Model):
     sftp_password = fields.Char(
         string='SFTP Password',
         groups='clinic_core.clinic_group_admin',
+    )
+    sftp_host_key = fields.Char(
+        string='SFTP Host Key (SHA256)',
+        groups='clinic_core.clinic_group_admin',
+        help='SHA256 fingerprint of the SFTP server host key for host verification. '
+             'Leave empty only in sandbox/dev mode (triggers a warning).',
     )
     sftp_in_path = fields.Char(string='SFTP Inbound Path', default='/edi/in')
     sftp_out_path = fields.Char(string='SFTP Outbound Path', default='/edi/out')

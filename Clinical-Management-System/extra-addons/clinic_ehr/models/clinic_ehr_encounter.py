@@ -1,4 +1,5 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError
 
 
 class ClinicEhrEncounter(models.Model):
@@ -72,10 +73,32 @@ class ClinicEhrEncounter(models.Model):
         self.state = 'in_progress'
 
     def action_complete(self):
-        self.state = 'completed'
+        if not (self.env.user.has_group('clinic_core.clinic_group_doctor') or
+                self.env.user.has_group('clinic_core.clinic_group_admin')):
+            raise AccessError(_("Only doctors or administrators can complete an encounter."))
+        for rec in self:
+            if rec.state != 'in_progress':
+                raise UserError(_("Only in-progress encounters can be completed."))
+            rec.state = 'completed'
 
     def action_cancel(self):
-        self.state = 'cancelled'
+        for rec in self:
+            if rec.state == 'completed':
+                claims = self.env['clinic.billing.claim'].search(
+                    [('encounter_id', '=', rec.id), ('state', 'not in', ['draft', 'cancelled'])])
+                if claims:
+                    raise UserError(_(
+                        "Cannot cancel encounter %s: it has active billing claims.") % rec.name)
+            rec.state = 'cancelled'
 
     def action_reset_draft(self):
-        self.state = 'draft'
+        if not self.env.user.has_group('clinic_core.clinic_group_admin'):
+            raise AccessError(_("Only administrators can reset an encounter to draft."))
+        for rec in self:
+            if rec.state == 'completed':
+                claims = self.env['clinic.billing.claim'].search(
+                    [('encounter_id', '=', rec.id), ('state', 'not in', ['draft', 'cancelled'])])
+                if claims:
+                    raise UserError(_(
+                        "Cannot reset encounter %s: it has active billing claims.") % rec.name)
+            rec.state = 'draft'

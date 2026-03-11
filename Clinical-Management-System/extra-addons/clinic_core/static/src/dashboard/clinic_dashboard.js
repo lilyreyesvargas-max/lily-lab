@@ -220,8 +220,8 @@ export class ClinicDashboard extends Component {
         // Chart A: Appointments by state (bar)
         s.chartATitle = "Appointments by State";
         s.chartAType  = "bar";
-        const apptStates = ["draft", "confirmed", "done", "cancelled"];
-        const apptColors = [COLORS.secondary, COLORS.info, COLORS.success, COLORS.danger];
+        const apptStates = ["scheduled", "confirmed", "completed", "cancelled", "no_show"];
+        const apptColors = [COLORS.secondary, COLORS.info, COLORS.success, COLORS.danger, COLORS.orange];
         try {
             const rows = await this.orm.readGroup("clinic.appointment", [], ["state"], ["state"]);
             const dataMap = {};
@@ -238,8 +238,8 @@ export class ClinicDashboard extends Component {
         // Chart B: Claims by state (doughnut)
         s.chartBTitle = "Claims by State";
         s.chartBType  = "doughnut";
-        const claimStates  = ["draft", "submitted", "paid", "rejected"];
-        const claimColors  = [COLORS.secondary, COLORS.info, COLORS.success, COLORS.danger];
+        const claimStates  = ["draft", "submitted", "partial", "paid", "denied", "voided"];
+        const claimColors  = [COLORS.secondary, COLORS.info, COLORS.warning, COLORS.success, COLORS.danger, COLORS.purple];
         try {
             const rows = await this.orm.readGroup("clinic.billing.claim", [], ["state"], ["state"]);
             const dataMap = {};
@@ -249,7 +249,7 @@ export class ClinicDashboard extends Component {
             s.chartBColors = claimColors;
         } catch {
             s.chartBLabels = claimStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
-            s.chartBData   = [0, 0, 0, 0];
+            s.chartBData   = [0, 0, 0, 0, 0, 0];
             s.chartBColors = claimColors;
         }
 
@@ -305,29 +305,29 @@ export class ClinicDashboard extends Component {
 
         try {
             s.kpi1 = await this.orm.searchCount("clinic.appointment", [
-                ["physician_id.user_id", "=", uid],
-                ["date_appointment", ">=", today + " 00:00:00"],
-                ["date_appointment", "<=", today + " 23:59:59"],
+                ["physician_id", "=", uid],
+                ["appointment_date", ">=", today + " 00:00:00"],
+                ["appointment_date", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi1 = 0; }
 
         try {
             s.kpi2 = await this.orm.searchCount("clinic.ehr.encounter", [
-                ["physician_id.user_id", "=", uid],
-                ["state", "in", ["in_progress", "pending"]],
+                ["physician_id", "=", uid],
+                ["state", "=", "in_progress"],
             ]);
         } catch { s.kpi2 = 0; }
 
         try {
             s.kpi3 = await this.orm.searchCount("clinic.appointment", [
-                ["physician_id.user_id", "=", uid],
-                ["date_appointment", ">=", weekStart().toISOString().slice(0, 10) + " 00:00:00"],
-                ["date_appointment", "<=", weekEnd + " 23:59:59"],
+                ["physician_id", "=", uid],
+                ["appointment_date", ">=", weekStart().toISOString().slice(0, 10) + " 00:00:00"],
+                ["appointment_date", "<=", weekEnd + " 23:59:59"],
             ]);
         } catch { s.kpi3 = 0; }
 
         try {
-            s.kpi4 = await this.orm.searchCount("clinic.stock.item", [["qty_available", "<", 1]]);
+            s.kpi4 = await this.orm.searchCount("stock.quant", [["quantity", "<=", 5]]);
         } catch { s.kpi4 = 0; }
 
         this._clickA = () => this.openAppointments();
@@ -345,15 +345,15 @@ export class ClinicDashboard extends Component {
             const rows = await this.orm.searchRead(
                 "clinic.appointment",
                 [
-                    ["physician_id.user_id", "=", uid],
-                    ["date_appointment", ">=", startDate + " 00:00:00"],
-                    ["date_appointment", "<=", today + " 23:59:59"],
+                    ["physician_id", "=", uid],
+                    ["appointment_date", ">=", startDate + " 00:00:00"],
+                    ["appointment_date", "<=", today + " 23:59:59"],
                 ],
-                ["date_appointment"]
+                ["appointment_date"]
             );
             rows.forEach(r => {
-                if (!r.date_appointment) return;
-                const dStr = r.date_appointment.slice(0, 10);
+                if (!r.appointment_date) return;
+                const dStr = r.appointment_date.slice(0, 10);
                 const dObj = new Date(dStr + "T00:00:00");
                 const idx  = Math.round((dObj - new Date(startDate + "T00:00:00")) / 86400000);
                 if (idx >= 0 && idx < 7) last7Counts[idx]++;
@@ -446,16 +446,16 @@ export class ClinicDashboard extends Component {
 
         try {
             const expiryLimit = datePlusDays(30);
-            s.kpi3 = await this.orm.searchCount("clinic.stock.item", [
-                ["expiry_date", ">=", today],
-                ["expiry_date", "<=", expiryLimit],
+            s.kpi3 = await this.orm.searchCount("stock.lot", [
+                ["expiration_date", ">=", today],
+                ["expiration_date", "<=", expiryLimit],
             ]);
         } catch { s.kpi3 = 0; }
 
         try {
             s.kpi4 = await this.orm.searchCount("clinic.appointment", [
-                ["date_appointment", ">=", today + " 00:00:00"],
-                ["date_appointment", "<=", today + " 23:59:59"],
+                ["appointment_date", ">=", today + " 00:00:00"],
+                ["appointment_date", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi4 = 0; }
 
@@ -491,14 +491,14 @@ export class ClinicDashboard extends Component {
         // Chart B: Encounters by state today (doughnut)
         s.chartBTitle = "Encounters by State Today";
         s.chartBType  = "doughnut";
-        const encStates = ["scheduled", "in_progress", "done", "cancelled"];
+        const encStates = ["draft", "in_progress", "completed", "cancelled"];
         const encColors = [COLORS.secondary, COLORS.warning, COLORS.success, COLORS.danger];
         try {
             const rows = await this.orm.readGroup(
                 "clinic.ehr.encounter",
                 [
-                    ["date_encounter", ">=", today + " 00:00:00"],
-                    ["date_encounter", "<=", today + " 23:59:59"],
+                    ["encounter_date", ">=", today + " 00:00:00"],
+                    ["encounter_date", "<=", today + " 23:59:59"],
                 ],
                 ["state"], ["state"]
             );
@@ -534,24 +534,24 @@ export class ClinicDashboard extends Component {
         // Chart D: Appointments today by state (doughnut)
         s.chartDTitle = "Appointments Today by State";
         s.chartDType  = "doughnut";
-        const apptStates  = ["draft", "confirmed", "done", "cancelled"];
-        const apptColorsD = [COLORS.info, COLORS.warning, COLORS.secondary, COLORS.primary];
+        const apptStatesD  = ["scheduled", "confirmed", "completed", "cancelled"];
+        const apptColorsD  = [COLORS.info, COLORS.warning, COLORS.success, COLORS.danger];
         try {
             const rows = await this.orm.readGroup(
                 "clinic.appointment",
                 [
-                    ["date_appointment", ">=", today + " 00:00:00"],
-                    ["date_appointment", "<=", today + " 23:59:59"],
+                    ["appointment_date", ">=", today + " 00:00:00"],
+                    ["appointment_date", "<=", today + " 23:59:59"],
                 ],
                 ["state"], ["state"]
             );
             const dataMap = {};
             rows.forEach(r => { dataMap[r.state] = r.state_count; });
-            s.chartDLabels = apptStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
-            s.chartDData   = apptStates.map(st => dataMap[st] || 0);
+            s.chartDLabels = apptStatesD.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartDData   = apptStatesD.map(st => dataMap[st] || 0);
             s.chartDColors = apptColorsD;
         } catch {
-            s.chartDLabels = apptStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartDLabels = apptStatesD.map(st => st.charAt(0).toUpperCase() + st.slice(1));
             s.chartDData   = [0, 0, 0, 0];
             s.chartDColors = apptColorsD;
         }
@@ -571,23 +571,23 @@ export class ClinicDashboard extends Component {
 
         try {
             s.kpi1 = await this.orm.searchCount("clinic.appointment", [
-                ["date_appointment", ">=", today + " 00:00:00"],
-                ["date_appointment", "<=", today + " 23:59:59"],
+                ["appointment_date", ">=", today + " 00:00:00"],
+                ["appointment_date", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi1 = 0; }
 
         try {
             s.kpi2 = await this.orm.searchCount("clinic.appointment", [
-                ["state", "=", "confirmed"],
-                ["date_appointment", ">=", today + " 00:00:00"],
-                ["date_appointment", "<=", today + " 23:59:59"],
+                ["state", "=", "arrived"],
+                ["appointment_date", ">=", today + " 00:00:00"],
+                ["appointment_date", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi2 = 0; }
 
         try {
             s.kpi3 = await this.orm.searchCount("clinic.appointment", [
-                ["date_appointment", ">=", today + " 00:00:00"],
-                ["date_appointment", "<=", next7 + " 23:59:59"],
+                ["appointment_date", ">=", today + " 00:00:00"],
+                ["appointment_date", "<=", next7 + " 23:59:59"],
             ]);
         } catch { s.kpi3 = 0; }
 
@@ -612,14 +612,14 @@ export class ClinicDashboard extends Component {
             const rows = await this.orm.searchRead(
                 "clinic.appointment",
                 [
-                    ["date_appointment", ">=", today + " 00:00:00"],
-                    ["date_appointment", "<=", next7 + " 23:59:59"],
+                    ["appointment_date", ">=", today + " 00:00:00"],
+                    ["appointment_date", "<=", next7 + " 23:59:59"],
                 ],
-                ["date_appointment"]
+                ["appointment_date"]
             );
             rows.forEach(r => {
-                if (!r.date_appointment) return;
-                const dStr = r.date_appointment.slice(0, 10);
+                if (!r.appointment_date) return;
+                const dStr = r.appointment_date.slice(0, 10);
                 const dObj = new Date(dStr + "T00:00:00");
                 const idx  = Math.round((dObj - new Date(today + "T00:00:00")) / 86400000);
                 if (idx >= 0 && idx < 7) next7Counts[idx]++;
@@ -632,14 +632,14 @@ export class ClinicDashboard extends Component {
         // Chart B: Appointments by state today (doughnut)
         s.chartBTitle = "Today's Appointments by State";
         s.chartBType  = "doughnut";
-        const apptStates = ["draft", "confirmed", "done", "cancelled"];
-        const apptColors = [COLORS.secondary, COLORS.info, COLORS.success, COLORS.danger];
+        const apptStates = ["scheduled", "confirmed", "arrived", "completed", "cancelled"];
+        const apptColors = [COLORS.secondary, COLORS.info, COLORS.warning, COLORS.success, COLORS.danger];
         try {
             const rows = await this.orm.readGroup(
                 "clinic.appointment",
                 [
-                    ["date_appointment", ">=", today + " 00:00:00"],
-                    ["date_appointment", "<=", today + " 23:59:59"],
+                    ["appointment_date", ">=", today + " 00:00:00"],
+                    ["appointment_date", "<=", today + " 23:59:59"],
                 ],
                 ["state"], ["state"]
             );
@@ -650,7 +650,7 @@ export class ClinicDashboard extends Component {
             s.chartBColors = apptColors;
         } catch {
             s.chartBLabels = apptStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
-            s.chartBData   = [0, 0, 0, 0];
+            s.chartBData   = apptStates.map(() => 0);
             s.chartBColors = apptColors;
         }
 
@@ -688,8 +688,8 @@ export class ClinicDashboard extends Component {
             const rows = await this.orm.readGroup(
                 "clinic.appointment",
                 [
-                    ["date_appointment", ">=", today + " 00:00:00"],
-                    ["date_appointment", "<=", today + " 23:59:59"],
+                    ["appointment_date", ">=", today + " 00:00:00"],
+                    ["appointment_date", "<=", today + " 23:59:59"],
                 ],
                 ["physician_id"], ["physician_id"]
             );
@@ -726,11 +726,11 @@ export class ClinicDashboard extends Component {
         try {
             s.kpi3 = await this.orm.searchCount("clinic.billing.claim", [
                 ["state", "=", "paid"],
-                ["date_paid", ">=", monthStart],
-                ["date_paid", "<=", today],
+                ["write_date", ">=", monthStart],
+                ["write_date", "<=", today + " 23:59:59"],
             ]);
         } catch { s.kpi3 = 0; }
-        try { s.kpi4 = await this.orm.searchCount("clinic.billing.claim", [["state", "=", "rejected"]]); } catch { s.kpi4 = 0; }
+        try { s.kpi4 = await this.orm.searchCount("clinic.billing.claim", [["state", "=", "denied"]]); } catch { s.kpi4 = 0; }
 
         this._clickA = () => this.openClaims();
         this._clickB = () => this.openRemittances();
@@ -740,8 +740,8 @@ export class ClinicDashboard extends Component {
         // Chart A: Claims by state (doughnut)
         s.chartATitle = "Claims by State";
         s.chartAType  = "doughnut";
-        const claimStates = ["draft", "submitted", "paid", "rejected"];
-        const claimColors = [COLORS.secondary, COLORS.info, COLORS.success, COLORS.danger];
+        const claimStates = ["draft", "submitted", "partial", "paid", "denied", "voided"];
+        const claimColors = [COLORS.secondary, COLORS.info, COLORS.warning, COLORS.success, COLORS.danger, COLORS.purple];
         try {
             const rows = await this.orm.readGroup("clinic.billing.claim", [], ["state"], ["state"]);
             const dataMap = {};
@@ -751,7 +751,7 @@ export class ClinicDashboard extends Component {
             s.chartAColors = claimColors;
         } catch {
             s.chartALabels = claimStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
-            s.chartAData   = [0, 0, 0, 0];
+            s.chartAData   = claimStates.map(() => 0);
             s.chartAColors = claimColors;
         }
 
@@ -776,18 +776,18 @@ export class ClinicDashboard extends Component {
         // Chart C: EDI transactions by state (bar)
         s.chartCTitle = "EDI Transactions by State";
         s.chartCType  = "bar";
-        const ediStates  = ["draft", "sent", "acknowledged", "rejected"];
-        const ediColorsC = [COLORS.purple, COLORS.orange, COLORS.success, COLORS.danger];
+        const ediStates  = ["draft", "validated", "sent", "received", "error", "processed"];
+        const ediColorsC = [COLORS.secondary, COLORS.info, COLORS.purple, COLORS.orange, COLORS.danger, COLORS.success];
         try {
             const rows = await this.orm.readGroup("clinic.edi.transaction", [], ["state"], ["state"]);
             const dataMap = {};
             rows.forEach(r => { dataMap[r.state] = r.state_count; });
-            s.chartCLabels = ediStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
+            s.chartCLabels = ediStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
             s.chartCData   = ediStates.map(st => dataMap[st] || 0);
             s.chartCColors = ediColorsC;
         } catch {
-            s.chartCLabels = ediStates.map(st => st.charAt(0).toUpperCase() + st.slice(1));
-            s.chartCData   = [0, 0, 0, 0];
+            s.chartCLabels = ediStates.map(st => st.replace(/_/g, " ").charAt(0).toUpperCase() + st.replace(/_/g, " ").slice(1));
+            s.chartCData   = ediStates.map(() => 0);
             s.chartCColors = ediColorsC;
         }
 
@@ -795,10 +795,10 @@ export class ClinicDashboard extends Component {
         s.chartDTitle = "Claims by Insurance Provider";
         s.chartDType  = "bar";
         try {
-            const rows = await this.orm.readGroup("clinic.billing.claim", [], ["insurer_id"], ["insurer_id"]);
+            const rows = await this.orm.readGroup("clinic.billing.claim", [], ["policy_id"], ["policy_id"]);
             if (rows && rows.length > 0) {
-                s.chartDLabels = rows.map(r => (r.insurer_id ? r.insurer_id[1] : "No Insurer"));
-                s.chartDData   = rows.map(r => r.insurer_id_count || 0);
+                s.chartDLabels = rows.map(r => (r.policy_id ? r.policy_id[1] : "No Policy"));
+                s.chartDData   = rows.map(r => r.policy_id_count || 0);
                 s.chartDColors = rows.map((_, i) => [COLORS.info, COLORS.warning, COLORS.secondary, COLORS.primary][i % 4]);
             } else {
                 s.chartDLabels = ["No Data"];

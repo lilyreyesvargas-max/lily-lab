@@ -11,7 +11,8 @@ class ClinicBillingClaim(models.Model):
     patient_id = fields.Many2one('clinic.patient', string='Patient', required=True, tracking=True)
     company_id = fields.Many2one('res.company', string='Branch',
                                  default=lambda self: self.env.company)
-    encounter_ref = fields.Char(string='Encounter Ref.')
+    encounter_id = fields.Many2one('clinic.ehr.encounter', string='Clinical Encounter',
+                                   ondelete='restrict')
     policy_id = fields.Many2one('clinic.patient.policy', string='Insurance Policy', required=True,
                                 domain="[('patient_id','=',patient_id)]")
     service_date = fields.Date(string='Service Date', required=True)

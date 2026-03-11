@@ -1,8 +1,12 @@
+import base64
+import hashlib
 import json
 import logging
 import urllib.request
 import urllib.error
 from datetime import datetime
+
+import paramiko
 
 from odoo import api, fields, models
 
@@ -34,7 +38,10 @@ class ClinicEdiTransaction(models.Model):
         ('draft', 'Draft'), ('validated', 'Validated'),
         ('sent', 'Sent'), ('received', 'Received'),
         ('error', 'Error'), ('processed', 'Processed'),
+        ('dead_letter', 'Dead Letter'),
     ], string='Status', default='draft', tracking=True)
+    retry_count = fields.Integer(string='Retry Count', default=0, readonly=True)
+    max_retries = fields.Integer(string='Max Retries', default=3)
     content = fields.Text(string='X12 Content')
     control_number = fields.Char(string='ISA Control Number')
     sender_id = fields.Char(string='Sender ID')
@@ -153,7 +160,30 @@ class ClinicEdiTransaction(models.Model):
                 continue
             try:
                 client = paramiko.SSHClient()
-                client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                if config.sftp_host_key:
+                    # Verify host key fingerprint (production)
+                    class _FingerprintPolicy(paramiko.MissingHostKeyPolicy):
+                        def __init__(self, expected):
+                            self._expected = expected
+                        def missing_host_key(self, client, hostname, key):
+                            fp = base64.b64encode(
+                                hashlib.sha256(key.asbytes()).digest()
+                            ).decode().rstrip('=')
+                            actual = f"SHA256:{fp}"
+                            if actual != self._expected:
+                                raise paramiko.SSHException(
+                                    f"Host key mismatch for {hostname}: "
+                                    f"got {actual}, expected {self._expected}"
+                                )
+                    client.set_missing_host_key_policy(_FingerprintPolicy(config.sftp_host_key))
+                else:
+                    # No fingerprint configured — warn and accept (sandbox/dev mode only)
+                    _logger.warning(
+                        "SFTP host key not configured for EDI config '%s'. "
+                        "Set sftp_host_key to a SHA256 fingerprint for production use.",
+                        config.name,
+                    )
+                    client.set_missing_host_key_policy(paramiko.WarningPolicy())
                 client.connect(config.sftp_host, port=config.sftp_port or 22,
                                username=config.sftp_user, password=config.sftp_password, timeout=30)
                 sftp = client.open_sftp()

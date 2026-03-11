@@ -1,0 +1,48 @@
+# ============================================================
+# docker-compose.prod.yml — Production overlay
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Differences from dev:
+#   - Mounts odoo.prod.conf (workers=4, max_cron_threads=2)
+#   - PostgreSQL bound to 127.0.0.1 only
+#   - pgAdmin and mock-clearinghouse removed
+#   - Odoo health check enabled
+#   - All credentials must come from environment variables (no defaults)
+# ============================================================
+
+version: "3.9"
+
+services:
+
+  db:
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"   # Not exposed externally in production
+
+  odoo:
+    volumes:
+      - ./odoo.prod.conf:/etc/odoo/odoo.conf       # Override: use prod conf (workers=4)
+      - ./extra-addons:/mnt/extra-addons
+      - odoo-data:/var/lib/odoo
+      - ./edi:/edi
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:8069/web/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: always
+
+  # Disable development-only services in production
+  mock-clearinghouse:
+    profiles:
+      - dev                                         # Only starts with --profile dev
+
+  sftp-sandbox:
+    profiles:
+      - dev                                         # Only starts with --profile dev
+
+  pgadmin:
+    profiles:
+      - dev                                         # Only starts with --profile dev

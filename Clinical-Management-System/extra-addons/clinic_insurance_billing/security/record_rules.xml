@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="0">
+    <data noupdate="1">
 
         <!-- ── clinic.billing.claim ───────────────────────────────────────── -->
         <!-- clinic.remittance has no company_id field, so no RLS rule needed.
@@ -18,6 +18,21 @@
         <record id="rule_billing_claim_admin_all" model="ir.rule">
             <field name="name">Clinic Billing Claim: admin sees all</field>
             <field name="model_id" ref="clinic_insurance_billing.model_clinic_billing_claim"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('clinic_core.clinic_group_admin'))]"/>
+        </record>
+
+        <!-- ── clinic.remittance: multi-company isolation ─────────────────── -->
+        <record id="rule_remittance_company" model="ir.rule">
+            <field name="name">Remittance: company isolation</field>
+            <field name="model_id" ref="clinic_insurance_billing.model_clinic_remittance"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('clinic_core.clinic_group_billing')), (4, ref('clinic_core.clinic_group_admin'))]"/>
+        </record>
+
+        <record id="rule_remittance_admin" model="ir.rule">
+            <field name="name">Remittance: admin override</field>
+            <field name="model_id" ref="clinic_insurance_billing.model_clinic_remittance"/>
             <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('clinic_core.clinic_group_admin'))]"/>
         </record>
