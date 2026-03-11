@@ -38,3 +38,6 @@ docker-compose.override.yml
 *.pyc
 filestore/
 sessions/
+
+# ─── Informes internos — no subir ─────────────────────────────────────────────
+Informenes/Accesos de Usuario por Roles de los datos Demos.pdf
