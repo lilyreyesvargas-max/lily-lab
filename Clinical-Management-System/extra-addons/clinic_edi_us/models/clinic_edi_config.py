@@ -1,4 +1,3 @@
-import paramiko
 from odoo import fields, models
 
 
